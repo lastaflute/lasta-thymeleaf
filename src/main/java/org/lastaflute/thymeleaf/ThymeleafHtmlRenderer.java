@@ -23,6 +23,11 @@ import org.lastaflute.web.callback.ActionRuntime;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.context.IContext;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
  * @author jflute
@@ -31,7 +36,35 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
 
     @Override
     public void render(RequestManager requestManager, ActionRuntime runtime, NextJourney journey) throws IOException, ServletException {
-        @SuppressWarnings("unused")
-        String routingPath = journey.getRoutingPath();
+        final TemplateEngine engine = createTemplateEngine();
+        final IContext context = createTemplateContext(); // #thinking form to context
+        final String html = engine.process(journey.getRoutingPath(), context);
+        write(requestManager, html);
+    }
+
+    protected TemplateEngine createTemplateEngine() {
+        final TemplateEngine engine = newTemplateEngine();
+        engine.addTemplateResolver(createTemplateResolver());
+        return engine; // #thinking needs instancee cache?
+    }
+
+    protected TemplateEngine newTemplateEngine() {
+        return new TemplateEngine();
+    }
+
+    protected TemplateResolver createTemplateResolver() {
+        return new ClassLoaderTemplateResolver();
+    }
+
+    protected Context createTemplateContext() {
+        return new Context();
+    }
+
+    protected void write(RequestManager requestManager, String html) {
+        requestManager.getResponseManager().write(html, "text/html", getEncoding());
+    }
+
+    protected String getEncoding() {
+        return "UTF-8";
     }
 }
