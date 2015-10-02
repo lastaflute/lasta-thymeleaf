@@ -16,48 +16,87 @@
 package org.lastaflute.thymeleaf;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Locale;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.dbflute.helper.message.ExceptionMessageBuilder;
+import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.web.callback.ActionRuntime;
+import org.lastaflute.web.exception.RequestForwardFailureException;
 import org.lastaflute.web.ruts.NextJourney;
+import org.lastaflute.web.ruts.config.ActionFormMeta;
+import org.lastaflute.web.ruts.config.ActionFormProperty;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
-import org.thymeleaf.context.IContext;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
+import org.thymeleaf.context.WebContext;
 
 /**
  * @author jflute
  */
 public class ThymeleafHtmlRenderer implements HtmlRenderer {
 
+    protected TemplateEngine templateEngine;
+
+    public TemplateEngine getTemplateEngine() {
+        return templateEngine;
+    }
+
+    public void setTemplateEngine(TemplateEngine engine) {
+        this.templateEngine = engine;
+    }
+
     @Override
     public void render(RequestManager requestManager, ActionRuntime runtime, NextJourney journey) throws IOException, ServletException {
-        final TemplateEngine engine = createTemplateEngine();
-        final IContext context = createTemplateContext(); // #thinking form to context
-        final String html = engine.process(journey.getRoutingPath(), context);
+        final TemplateEngine engine = getTemplateEngine();
+        final WebContext context = createTemplateContext(requestManager);
+        exportFormPropertyToContext(context, runtime); // form to context
+        final String html = createResponseBody(engine, context, runtime, journey);
         write(requestManager, html);
     }
 
-    protected TemplateEngine createTemplateEngine() {
-        final TemplateEngine engine = newTemplateEngine();
-        engine.addTemplateResolver(createTemplateResolver());
-        return engine; // #thinking needs instancee cache?
+    protected WebContext createTemplateContext(RequestManager requestManager) {
+        HttpServletRequest request = requestManager.getRequest();
+        HttpServletResponse response = requestManager.getResponseManager().getResponse();
+        ServletContext servletContext = request.getServletContext();
+        Locale locale = request.getLocale();
+        return new WebContext(request, response, servletContext, locale);
     }
 
-    protected TemplateEngine newTemplateEngine() {
-        return new TemplateEngine();
+    protected void exportFormPropertyToContext(WebContext context, ActionRuntime runtime) {
+        runtime.getActionForm().ifPresent(virtualForm -> {
+            final ActionFormMeta meta = virtualForm.getFormMeta();
+            final Collection<ActionFormProperty> properties = meta.properties();
+            if (properties.isEmpty()) {
+                return;
+            }
+            final Object form = virtualForm.getRealForm();
+            for (ActionFormProperty property : properties) {
+                if (isExportableProperty(property.getPropertyDesc())) {
+                    final Object propertyValue = property.getPropertyValue(form);
+                    if (propertyValue != null) {
+                        context.setVariable(property.getPropertyName(), propertyValue);
+                    }
+                }
+            }
+        });
     }
 
-    protected TemplateResolver createTemplateResolver() {
-        return new ClassLoaderTemplateResolver();
+    protected boolean isExportableProperty(PropertyDesc pd) {
+        return !pd.getPropertyType().getName().startsWith("javax.servlet");
     }
 
-    protected Context createTemplateContext() {
-        return new Context();
+    protected String createResponseBody(TemplateEngine engine, WebContext context, ActionRuntime runtime, NextJourney journey) {
+        try {
+            return engine.process(journey.getRoutingPath(), context);
+        } catch (RuntimeException e) {
+            return throwRequestForwardFailureException(runtime, journey, e);
+        }
     }
 
     protected void write(RequestManager requestManager, String html) {
@@ -66,5 +105,18 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
 
     protected String getEncoding() {
         return "UTF-8";
+    }
+
+    protected String throwRequestForwardFailureException(ActionRuntime runtime, NextJourney journey, Exception e) {
+        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+        br.addNotice("Failed to forward the request to the path.");
+        br.addItem("Advice");
+        br.addElement("Read the nested exception message.");
+        br.addItem("Action Runtime");
+        br.addElement(runtime);
+        br.addItem("Forward Journey");
+        br.addElement(journey);
+        final String msg = br.buildExceptionMessage();
+        throw new RequestForwardFailureException(msg, e);
     }
 }

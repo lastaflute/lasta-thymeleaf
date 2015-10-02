@@ -14,6 +14,7 @@
 	<properties>
 		<lastaflute.version>0.6.4-RC1</lastaflute.version>
 		<thymeleaf.version>2.1.4.RELEASE</thymeleaf.version>
+		<javassist.version>3.20.0-GA</javassist.version> <!-- latest version without thymeleaf -->
 		<servlet.version>3.1.0</servlet.version>
 		<utflute.version>0.5.0-sp9</utflute.version>
 		<junit.version>4.8.2</junit.version> <!-- latest version without hamcrest -->
@@ -204,6 +205,11 @@
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf</artifactId>
 			<version>${thymeleaf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>${javassist.version}</version>
 		</dependency>
 
 		<!-- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = -->
