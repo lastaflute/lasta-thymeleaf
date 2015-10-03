@@ -25,12 +25,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
+import org.dbflute.optional.OptionalThing;
 import org.lastaflute.di.helper.beans.PropertyDesc;
+import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.callback.ActionRuntime;
 import org.lastaflute.web.exception.RequestForwardFailureException;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.config.ActionFormMeta;
 import org.lastaflute.web.ruts.config.ActionFormProperty;
+import org.lastaflute.web.ruts.message.ActionMessages;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
 import org.thymeleaf.TemplateEngine;
@@ -55,6 +58,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     public void render(RequestManager requestManager, ActionRuntime runtime, NextJourney journey) throws IOException, ServletException {
         final TemplateEngine engine = getTemplateEngine();
         final WebContext context = createTemplateContext(requestManager);
+        exportErrorsToContext(requestManager, context);
         exportFormPropertyToContext(context, runtime); // form to context
         final String html = createResponseBody(engine, context, runtime, journey);
         write(requestManager, html);
@@ -66,6 +70,19 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         ServletContext servletContext = request.getServletContext();
         Locale locale = request.getLocale();
         return new WebContext(request, response, servletContext, locale);
+    }
+
+    protected void exportErrorsToContext(RequestManager requestManager, WebContext context) {
+        context.setVariable("errors", extractActionErrors(requestManager));
+    }
+
+    protected ActionMessages extractActionErrors(RequestManager requestManager) {
+        OptionalThing<ActionMessages> errors = requestManager.getAttribute(getMessagesAttributeKey(), ActionMessages.class);
+        return errors.isPresent() ? errors.get() : new ActionMessages();
+    }
+
+    protected String getMessagesAttributeKey() {
+        return LastaWebKey.ACTION_ERRORS_KEY;
     }
 
     protected void exportFormPropertyToContext(WebContext context, ActionRuntime runtime) {
