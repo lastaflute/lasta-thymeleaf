@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
-import org.dbflute.optional.OptionalThing;
 import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.callback.ActionRuntime;
@@ -41,50 +40,70 @@ import org.thymeleaf.context.WebContext;
 
 /**
  * @author jflute
+ * @author schatten
  */
 public class ThymeleafHtmlRenderer implements HtmlRenderer {
 
-    protected TemplateEngine templateEngine;
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
+    public static final String DEFAULT_HTML_ENCODING = "UTF-8";
 
-    public TemplateEngine getTemplateEngine() {
-        return templateEngine;
+    // ===================================================================================
+    //                                                                           Attribute
+    //                                                                           =========
+    protected final TemplateEngine templateEngine;
+
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
+    public ThymeleafHtmlRenderer(TemplateEngine templateEngine) {
+        this.templateEngine = templateEngine;
     }
 
-    public void setTemplateEngine(TemplateEngine engine) {
-        this.templateEngine = engine;
-    }
-
+    // ===================================================================================
+    //                                                                              Render
+    //                                                                              ======
     @Override
     public void render(RequestManager requestManager, ActionRuntime runtime, NextJourney journey) throws IOException, ServletException {
-        final TemplateEngine engine = getTemplateEngine();
         final WebContext context = createTemplateContext(requestManager);
         exportErrorsToContext(requestManager, context);
         exportFormPropertyToContext(context, runtime); // form to context
-        final String html = createResponseBody(engine, context, runtime, journey);
+        final String html = createResponseBody(templateEngine, context, runtime, journey);
         write(requestManager, html);
     }
 
+    // -----------------------------------------------------
+    //                                      Template Context
+    //                                      ----------------
     protected WebContext createTemplateContext(RequestManager requestManager) {
-        HttpServletRequest request = requestManager.getRequest();
-        HttpServletResponse response = requestManager.getResponseManager().getResponse();
-        ServletContext servletContext = request.getServletContext();
-        Locale locale = request.getLocale();
+        final HttpServletRequest request = requestManager.getRequest();
+        final HttpServletResponse response = requestManager.getResponseManager().getResponse();
+        final ServletContext servletContext = request.getServletContext();
+        final Locale locale = request.getLocale();
         return new WebContext(request, response, servletContext, locale);
     }
 
+    // -----------------------------------------------------
+    //                                         Export Errors
+    //                                         -------------
     protected void exportErrorsToContext(RequestManager requestManager, WebContext context) {
         context.setVariable("errors", extractActionErrors(requestManager));
     }
 
     protected ActionMessages extractActionErrors(RequestManager requestManager) {
-        OptionalThing<ActionMessages> errors = requestManager.getAttribute(getMessagesAttributeKey(), ActionMessages.class);
-        return errors.isPresent() ? errors.get() : new ActionMessages();
+        return requestManager.getAttribute(getMessagesAttributeKey(), ActionMessages.class).orElseGet(() -> {
+            return new ActionMessages();
+        });
     }
 
     protected String getMessagesAttributeKey() {
         return LastaWebKey.ACTION_ERRORS_KEY;
     }
 
+    // -----------------------------------------------------
+    //                                           Export Form
+    //                                           -----------
     protected void exportFormPropertyToContext(WebContext context, ActionRuntime runtime) {
         runtime.getActionForm().ifPresent(virtualForm -> {
             final ActionFormMeta meta = virtualForm.getFormMeta();
@@ -108,6 +127,9 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         return !pd.getPropertyType().getName().startsWith("javax.servlet");
     }
 
+    // -----------------------------------------------------
+    //                                         Response Body
+    //                                         -------------
     protected String createResponseBody(TemplateEngine engine, WebContext context, ActionRuntime runtime, NextJourney journey) {
         try {
             return engine.process(journey.getRoutingPath(), context);
@@ -121,7 +143,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     }
 
     protected String getEncoding() {
-        return "UTF-8";
+        return DEFAULT_HTML_ENCODING;
     }
 
     protected String throwRequestForwardFailureException(ActionRuntime runtime, NextJourney journey, Exception e) {
@@ -135,5 +157,12 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         br.addElement(journey);
         final String msg = br.buildExceptionMessage();
         throw new RequestForwardFailureException(msg, e);
+    }
+
+    // ===================================================================================
+    //                                                                            Accessor
+    //                                                                            ========
+    public TemplateEngine getTemplateEngine() {
+        return templateEngine;
     }
 }

@@ -31,11 +31,20 @@ import org.thymeleaf.templateresolver.TemplateResolver;
  */
 public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
 
-    protected static final String DEFAULT_TEMPLATE_MODE = "HTML5";
-    protected static final String DEFAULT_TEMPLATE_ENCODING = "UTF-8";
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
+    public static final String DEFAULT_TEMPLATE_MODE = "HTML5";
+    public static final String DEFAULT_TEMPLATE_ENCODING = "UTF-8";
 
-    private TemplateEngine templateEngine;
+    // ===================================================================================
+    //                                                                           Attribute
+    //                                                                           =========
+    private TemplateEngine cachedTemplateEngine;
 
+    // ===================================================================================
+    //                                                                             Provide
+    //                                                                             =======
     /**
      * @param runtime The runtime of current requested action. (NotNull)
      * @param journey The journey to next stage. (NotNull)
@@ -44,29 +53,28 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
      */
     @Override
     public HtmlRenderer provideRenderer(ActionRuntime runtime, NextJourney journey) {
-        ThymeleafHtmlRenderer renderer = new ThymeleafHtmlRenderer();
-        renderer.setTemplateEngine(getTemplateEngine());
-        return renderer;
+        return new ThymeleafHtmlRenderer(getTemplateEngine());
     }
 
+    // ===================================================================================
+    //                                                                     Template Engine
+    //                                                                     ===============
     protected TemplateEngine getTemplateEngine() {
-        if (templateEngine != null) {
-            return templateEngine;
+        if (cachedTemplateEngine != null) {
+            return cachedTemplateEngine;
         }
         synchronized (this) {
-            if (templateEngine != null) {
-                return templateEngine;
+            if (cachedTemplateEngine != null) {
+                return cachedTemplateEngine;
             }
-            templateEngine = createTemplateEngine();
+            cachedTemplateEngine = createTemplateEngine();
         }
-        return templateEngine;
+        return cachedTemplateEngine;
     }
 
     protected TemplateEngine createTemplateEngine() {
         final TemplateEngine engine = newTemplateEngine();
-
         setupTemplateEngin(engine);
-
         return engine;
     }
 
@@ -74,20 +82,20 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         return new TemplateEngine();
     }
 
-    protected void setupTemplateEngin(final TemplateEngine engine) {
+    protected void setupTemplateEngin(TemplateEngine engine) {
         engine.addTemplateResolver(createTemplateResolver());
 
-        StandardMessageResolver standardMessageResolver = new StandardMessageResolver();
+        final StandardMessageResolver standardMessageResolver = new StandardMessageResolver();
         standardMessageResolver.setOrder(1);
         engine.addMessageResolver(standardMessageResolver);
 
-        LastaThymeleafMessageResolver lastaThymeleafMessageResolver = new LastaThymeleafMessageResolver();
+        final LastaThymeleafMessageResolver lastaThymeleafMessageResolver = new LastaThymeleafMessageResolver();
         lastaThymeleafMessageResolver.setOrder(10);
         engine.addMessageResolver(lastaThymeleafMessageResolver);
     }
 
     protected TemplateResolver createTemplateResolver() {
-        ServletContextTemplateResolver resolver = new ServletContextTemplateResolver();
+        final ServletContextTemplateResolver resolver = new ServletContextTemplateResolver();
         resolver.setPrefix(LaServletContextUtil.getJspViewPrefix());
         resolver.setTemplateMode(getTemplateMode());
         resolver.setCharacterEncoding(getEncoding());
@@ -101,5 +109,4 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     protected String getEncoding() {
         return DEFAULT_TEMPLATE_ENCODING;
     }
-
 }

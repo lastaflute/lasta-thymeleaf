@@ -17,7 +17,6 @@ package org.lastaflute.thymeleaf;
 
 import java.util.Locale;
 
-import org.dbflute.optional.OptionalThing;
 import org.lastaflute.core.message.MessageManager;
 import org.lastaflute.core.util.ContainerUtil;
 import org.thymeleaf.Arguments;
@@ -26,6 +25,7 @@ import org.thymeleaf.messageresolver.MessageResolution;
 
 /**
  * @author schatten
+ * @author jflute
  */
 public class LastaThymeleafMessageResolver extends AbstractMessageResolver {
 
@@ -39,9 +39,9 @@ public class LastaThymeleafMessageResolver extends AbstractMessageResolver {
     @Override
     public MessageResolution resolveMessage(Arguments arguments, String key, Object[] messageParameters) {
         checkInitialized();
-        final Locale locale = arguments.getContext().getLocale();
-        OptionalThing<String> message = messageManager.findMessage(locale, key, messageParameters);
-        return message.isPresent() ? new MessageResolution(message.get()) : null;
+        final Locale locale = arguments.getContext().getLocale(); // #thinking requestManager.getUserLocale()?
+        return messageManager.findMessage(locale, key, messageParameters).map(message -> {
+            return new MessageResolution(message);
+        }).orElse(null);
     }
-
 }
