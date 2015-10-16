@@ -15,13 +15,19 @@
  */
 package org.lastaflute.thymeleaf;
 
+import java.util.HashSet;
+
+import org.lastaflute.thymeleaf.processor.LastaThymeleafDialect;
 import org.lastaflute.web.callback.ActionRuntime;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.ruts.renderer.HtmlRenderingProvider;
 import org.lastaflute.web.util.LaServletContextUtil;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.dialect.IDialect;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
+import org.thymeleaf.processor.IProcessor;
+import org.thymeleaf.standard.StandardDialect;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 import org.thymeleaf.templateresolver.TemplateResolver;
 
@@ -92,6 +98,16 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         final LastaThymeleafMessageResolver lastaThymeleafMessageResolver = new LastaThymeleafMessageResolver();
         lastaThymeleafMessageResolver.setOrder(10);
         engine.addMessageResolver(lastaThymeleafMessageResolver);
+
+        LastaThymeleafDialect dialect = new LastaThymeleafDialect(engine.getConfiguration());
+        engine.addDialect(dialect);
+
+        IDialect standard = engine.getDialectsByPrefix().get(StandardDialect.PREFIX);
+        if (standard instanceof StandardDialect) {
+            // Add to standard prefix access
+            ((StandardDialect)standard).setAdditionalProcessors(new HashSet<IProcessor>(dialect.getProcessors()));
+        }
+
     }
 
     protected TemplateResolver createTemplateResolver() {
