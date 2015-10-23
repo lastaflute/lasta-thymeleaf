@@ -33,7 +33,7 @@ import org.thymeleaf.processor.IProcessor;
  */
 public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implements IExpressionEnhancingDialect {
 
-    protected static final String LASTA_TYMELEAF_DIALECT_PREFIX = "df";
+    protected static final String LASTA_TYMELEAF_DIALECT_PREFIX = "la";
 
     protected final Configuration configuration;
     private final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
