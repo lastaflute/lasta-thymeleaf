@@ -48,11 +48,13 @@ import org.thymeleaf.standard.processor.attr.StandardEachAttrProcessor;
  */
 public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcessor {
 
+    private static final String PROPERTY_ATTRIBUTE_NAME = "property";
     private static final String EACH_PROPERTY_FORM_NAME = "'%s[' + ${%s.index} + '].%s'";
     private static final String APPEND_ERROR_STYLE_CLASS = "${errors.hasMessageOf('%s')} ? 'validError'";
     private static final String APPEND_ERROR_STYLE_CLASS_ATTRAPEND = "class=(${errors.hasMessageOf('%s')} ? ' validError')";
-    private static final String PROPERTY_ATTRIBUTE_NAME = "property";
     private static final String EACH_ATTER_NAME = String.format("%s:%s", StandardDialect.PREFIX, StandardEachAttrProcessor.ATTR_NAME);
+
+    protected static final String SELECT_PROPERTY_NAME = "la:selectPropertyName";
 
     public PropertyAttrProcessor() {
         super(PROPERTY_ATTRIBUTE_NAME);
@@ -101,6 +103,7 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
                 if (!hasThName) {
                     values.put("th:name", propertyFieldName);
                 }
+                element.setNodeProperty(SELECT_PROPERTY_NAME, propertyName);
                 break;
             case "textarea":
                 if (!hasThName) {
@@ -166,9 +169,9 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
                     }
                 }
             }
-        }
-        if (parent instanceof Element && parent.hasParent()) {
-            return getParentEachValue((Element) parent, eachName);
+            if (parent.hasParent()) {
+                return getParentEachValue((Element) parent, eachName);
+            }
         }
         return null;
     }

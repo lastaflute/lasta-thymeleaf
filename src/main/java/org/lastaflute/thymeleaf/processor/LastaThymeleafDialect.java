@@ -62,7 +62,8 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
 
     public static Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
-        // TODO Create custom processor
+        processors.add(new PropertyAttrProcessor());
+        processors.add(new OptionClsAttrProcessor());
         return processors;
     }
 
