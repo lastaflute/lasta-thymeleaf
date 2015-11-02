@@ -17,42 +17,35 @@ package org.lastaflute.thymeleaf.processor;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.thymeleaf.Arguments;
 import org.thymeleaf.Configuration;
-import org.thymeleaf.dom.Attribute;
 import org.thymeleaf.dom.Element;
-import org.thymeleaf.dom.NestableNode;
 import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
 import org.thymeleaf.standard.StandardDialect;
 import org.thymeleaf.standard.expression.IStandardExpression;
 import org.thymeleaf.standard.expression.IStandardExpressionParser;
 import org.thymeleaf.standard.expression.StandardExpressions;
-import org.thymeleaf.standard.processor.attr.StandardEachAttrProcessor;
 
 /**
  * Property Attribute Processor.
  * <pre>
  * Usage:
- *   &lt;input type="text" la:property="memberName"/&gt;
+ *   &lt;input type="text" <b>la:property="memberName"</b>/&gt;
  *
  * The result of processing this example will be as expected.
  *   - MemberName with set to "Ariel"
- *     &lt;input type="text" name="memberName" value="Ariel"/&gt;
+ *     &lt;input type="text" <b>name="memberName" value="Ariel"</b>/&gt;
  *   - When MemberName have validation error.
- *     &lt;input type="text" name="memberName" value="" class="validError"/&gt;
+ *     &lt;input type="text" <b>name="memberName" value="" class="validError"</b>/&gt;
  * </pre>
  * @author schatten
  */
 public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcessor {
 
     private static final String PROPERTY_ATTRIBUTE_NAME = "property";
-    private static final String EACH_PROPERTY_FORM_NAME = "'%s[' + ${%s.index} + '].%s'";
     private static final String APPEND_ERROR_STYLE_CLASS = "${errors.hasMessageOf('%s')} ? 'validError'";
     private static final String APPEND_ERROR_STYLE_CLASS_ATTRAPEND = "class=(${errors.hasMessageOf('%s')} ? ' validError')";
-    private static final String EACH_ATTER_NAME = String.format("%s:%s", StandardDialect.PREFIX, StandardEachAttrProcessor.ATTR_NAME);
 
     protected static final String SELECT_PROPERTY_NAME = "la:selectPropertyName";
 
@@ -126,94 +119,18 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
     }
 
     protected String getPropertyFieldName(Arguments arguments, Element element, final Configuration configuration, final String name) {
-        if (name.indexOf(".") > 0) {
-            String eachName = name.substring(0, name.indexOf(".")).trim();
-            String statusVariable = eachName + "Stat";
-            String eachAttr = getParentEachValue(element, eachName);
-            if (eachAttr == null) {
-                return name;
+        if (arguments.hasLocalVariable(ForEachAttrProcessor.FORM_PROPERTY_PATH_VER)) {
+            String formName = (String) arguments.getLocalVariable(ForEachAttrProcessor.FORM_PROPERTY_PATH_VER) + ".";
+            int indexOf = name.indexOf(".");
+            if (indexOf < 0) {
+                formName += name;
+            } else {
+                formName += name.substring(indexOf + 1);
             }
-            statusVariable = getProdStatusNameFromEachAttributeValue(eachAttr);
-            String expressionPropertyName = getExpressionPropertyName(eachAttr);
-            if (expressionPropertyName != null) {
-                if (expressionPropertyName.indexOf(".") > 0) {
-                    eachName = expressionPropertyName.substring(expressionPropertyName.lastIndexOf(".") + 1);
-                } else {
-                    eachName = expressionPropertyName;
-                }
-            }
-
-            String nextName = name.substring(name.indexOf(".") + 1);
-            return String.format(EACH_PROPERTY_FORM_NAME, eachName, statusVariable, nextName);
+            return formName;
         }
+
         return name;
-    }
-
-    protected String getParentEachValue(Element element, String eachName) {
-        NestableNode parent = element.getParent();
-        if (parent instanceof Element) {
-            // Thymeleaf bug ?? NestableAttributeHolderNode.attributesLen is every access result zero.
-            //  if (((Element) parent).hasAttribute(EACH_ATTER_NAME)) {
-            //      String attVal = ((Element) parent).getAttributeValueFromNormalizedName(EACH_ATTER_NAME);
-            //      if (eachName.equals(getProdNameFromEachAttributeValue(attVal))) {
-            //          return attVal;
-            //      }
-            //  }
-            Attribute[] attributes = ((Element) parent).unsafeGetAttributes();
-            if (attributes != null) {
-                for (Attribute attribute : attributes) {
-                    if (attribute != null && EACH_ATTER_NAME.equals(attribute.getNormalizedName())) {
-                        if (eachName.equals(getProdNameFromEachAttributeValue(attribute.getValue()))) {
-                            return attribute.getValue();
-                        }
-                    }
-                }
-            }
-            if (parent.hasParent()) {
-                return getParentEachValue((Element) parent, eachName);
-            }
-        }
-        return null;
-    }
-
-    private String getProdNameFromEachAttributeValue(String eachAttrVal) {
-        if (eachAttrVal == null) {
-            return null;
-        }
-        int separate = eachAttrVal.indexOf(":");
-        String prod = eachAttrVal.substring(0, separate);
-        int statusProd = prod.indexOf(",");
-        if (statusProd > 0) {
-            return prod.substring(0, statusProd).trim();
-        }
-        return prod.trim();
-    }
-
-    private String getProdStatusNameFromEachAttributeValue(String eachAttrVal) {
-        if (eachAttrVal == null) {
-            return null;
-        }
-        int separate = eachAttrVal.indexOf(":");
-        String prod = eachAttrVal.substring(0, separate);
-        int statusProd = prod.indexOf(",");
-        if (statusProd > 0) {
-            return prod.substring(statusProd).trim();
-        }
-        return prod.trim() + "Stat";
-    }
-
-    private String getExpressionPropertyName(String eachAttrVal) {
-        if (eachAttrVal == null) {
-            return null;
-        }
-        int separate = eachAttrVal.indexOf(":");
-        String expression = eachAttrVal.substring(separate + 1).trim();
-        Pattern pattern = Pattern.compile("\\$\\{([a-zA-Z_0-9.]+)\\}");
-        Matcher matcher = pattern.matcher(expression);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        return null;
     }
 
     @Override
