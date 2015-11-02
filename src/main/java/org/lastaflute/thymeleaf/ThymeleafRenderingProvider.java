@@ -54,6 +54,9 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
      */
     @Override
     public HtmlRenderer provideRenderer(ActionRuntime runtime, NextJourney journey) {
+        if (journey.getRoutingPath().endsWith(".jsp")) {
+            return DEFAULT_RENDERER;
+        }
         return new ThymeleafHtmlRenderer(getTemplateEngine());
     }
 
