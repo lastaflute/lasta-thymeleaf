@@ -51,8 +51,14 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  */
 public class ExpressionCDefProcessor {
 
+    // ===================================================================================
+    //                                                                           Attribute
+    //                                                                           =========
     private final IProcessingContext processingContext;
 
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
     public ExpressionCDefProcessor(IProcessingContext processingContext) {
         this.processingContext = processingContext;
     }

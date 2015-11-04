@@ -71,19 +71,36 @@ import org.thymeleaf.util.Validate;
  */
 public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcessor {
 
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
     protected static final String OPTION_CLS_ATTRIBUTE_NAME = "optionCls";
     private static final String OPTION_CLS_ELEMENT_TARGET = "option";
     private static final String DEFAULT_ITERATION_VALUE = "opdef";
 
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
     protected OptionClsAttrProcessor() {
         super(new AttributeNameProcessorMatcher(OPTION_CLS_ATTRIBUTE_NAME, OPTION_CLS_ELEMENT_TARGET));
     }
 
+    // ===================================================================================
+    //                                                                          Implements
+    //                                                                          ==========
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.AbstractProcessor#getPrecedence()
+     */
     @Override
     public int getPrecedence() {
         return 200;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModifiedAttributeValues(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
+     */
     @Override
     protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
 
@@ -116,16 +133,28 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
         return getParentSelectPropertyName((Element)element.getParent());
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModificationType(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
+     */
     @Override
     protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
         return ModificationType.SUBSTITUTION;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#removeAttributeIfEmpty(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
+     */
     @Override
     protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#recomputeProcessorsAfterExecution(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
+     */
     @Override
     protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
         return true;
@@ -166,6 +195,9 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
         return new IterationSpec(iterVarName, statusVarName, classificationName);
     }
 
+    // ===================================================================================
+    //                                                                     Internal Object
+    //                                                                     ===============
     protected static class IterationSpec {
 
         private final String iterVarName;

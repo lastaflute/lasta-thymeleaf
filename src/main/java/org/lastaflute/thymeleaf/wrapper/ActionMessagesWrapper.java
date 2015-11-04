@@ -46,7 +46,7 @@ public class ActionMessagesWrapper implements Serializable {
     }
 
     // ===================================================================================
-    //                                                                      Access Message
+    //                                                                      Convert Access
     //                                                                      ==============
     public List<ActionMessage> getAllMessages() {
         List<ActionMessage> list = new ArrayList<ActionMessage>();
@@ -61,7 +61,7 @@ public class ActionMessagesWrapper implements Serializable {
     }
 
     // ===================================================================================
-    //                                                                     Delegate method
+    //                                                                     Delegate Access
     //                                                                     ===============
     /**
      * @see org.lastaflute.web.ruts.message.ActionMessages#hasMessageOf(java.lang.String)

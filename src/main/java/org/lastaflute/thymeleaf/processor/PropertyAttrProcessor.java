@@ -43,21 +43,38 @@ import org.thymeleaf.standard.expression.StandardExpressions;
  */
 public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcessor {
 
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
     private static final String PROPERTY_ATTRIBUTE_NAME = "property";
     private static final String APPEND_ERROR_STYLE_CLASS = "${errors.hasMessageOf('%s')} ? 'validError'";
     private static final String APPEND_ERROR_STYLE_CLASS_ATTRAPEND = "class=(${errors.hasMessageOf('%s')} ? ' validError')";
 
     protected static final String SELECT_PROPERTY_NAME = "la:selectPropertyName";
 
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
     public PropertyAttrProcessor() {
         super(PROPERTY_ATTRIBUTE_NAME);
     }
 
+    // ===================================================================================
+    //                                                                          Implements
+    //                                                                          ==========
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.AbstractProcessor#getPrecedence()
+     */
     @Override
     public int getPrecedence() {
         return 950;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModifiedAttributeValues(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
+     */
     @Override
     protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
         final Configuration configuration = arguments.getConfiguration();
@@ -133,16 +150,28 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
         return name;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModificationType(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
+     */
     @Override
     protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
         return ModificationType.SUBSTITUTION;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#removeAttributeIfEmpty(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
+     */
     @Override
     protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#recomputeProcessorsAfterExecution(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
+     */
     @Override
     protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
         return true;
