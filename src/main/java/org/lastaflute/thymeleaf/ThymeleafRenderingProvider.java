@@ -15,6 +15,7 @@
  */
 package org.lastaflute.thymeleaf;
 
+import org.lastaflute.thymeleaf.processor.LastaThymeleafDialect;
 import org.lastaflute.web.callback.ActionRuntime;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
@@ -53,6 +54,9 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
      */
     @Override
     public HtmlRenderer provideRenderer(ActionRuntime runtime, NextJourney journey) {
+        if (journey.getRoutingPath().endsWith(".jsp")) {
+            return DEFAULT_RENDERER;
+        }
         return new ThymeleafHtmlRenderer(getTemplateEngine());
     }
 
@@ -92,6 +96,10 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         final LastaThymeleafMessageResolver lastaThymeleafMessageResolver = new LastaThymeleafMessageResolver();
         lastaThymeleafMessageResolver.setOrder(10);
         engine.addMessageResolver(lastaThymeleafMessageResolver);
+
+        LastaThymeleafDialect dialect = new LastaThymeleafDialect(engine.getConfiguration());
+        engine.addDialect(dialect);
+
     }
 
     protected TemplateResolver createTemplateResolver() {
