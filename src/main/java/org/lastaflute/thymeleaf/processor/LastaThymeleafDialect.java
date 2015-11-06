@@ -30,6 +30,7 @@ import org.thymeleaf.processor.IProcessor;
 /**
  * Lasta Thymeleaf Dialect.
  * @author schatten
+ * @author jflute
  */
 public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implements IExpressionEnhancingDialect {
 
@@ -108,6 +109,4 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     public void addAdditionalProcessor(IProcessor processor) {
         this.additionalProcessors.add(processor);
     }
-
-
 }

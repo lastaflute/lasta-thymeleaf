@@ -40,6 +40,7 @@ import org.thymeleaf.standard.expression.StandardExpressions;
  *     &lt;input type="text" <b>name="memberName" value="" class="validError"</b>/&gt;
  * </pre>
  * @author schatten
+ * @author jflute
  */
 public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcessor {
 
@@ -176,5 +177,4 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
     protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
         return true;
     }
-
 }

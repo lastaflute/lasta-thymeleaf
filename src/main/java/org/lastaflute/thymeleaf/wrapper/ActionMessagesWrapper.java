@@ -25,6 +25,7 @@ import org.lastaflute.web.ruts.message.ActionMessages;
 /**
  * Read-only Action Messages Wrapper.
  * @author schatten
+ * @author jflute
  */
 public class ActionMessagesWrapper implements Serializable {
 
@@ -104,5 +105,4 @@ public class ActionMessagesWrapper implements Serializable {
     public int size(String property) {
         return messages.size(property);
     }
-
 }

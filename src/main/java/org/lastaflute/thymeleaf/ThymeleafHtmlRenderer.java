@@ -68,8 +68,8 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     @Override
     public void render(RequestManager requestManager, ActionRuntime runtime, NextJourney journey) throws IOException, ServletException {
         final WebContext context = createTemplateContext(requestManager);
-        exportErrorsToContext(requestManager, context);
-        exportFormPropertyToContext(context, runtime); // form to context
+        exportErrorsToContext(requestManager, context, runtime);
+        exportFormPropertyToContext(requestManager, context, runtime);
         final String html = createResponseBody(templateEngine, context, runtime, journey);
         write(requestManager, html);
     }
@@ -88,7 +88,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     // -----------------------------------------------------
     //                                         Export Errors
     //                                         -------------
-    protected void exportErrorsToContext(RequestManager requestManager, WebContext context) {
+    protected void exportErrorsToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
         context.setVariable("errors", new ActionMessagesWrapper(extractActionErrors(requestManager)));
     }
 
@@ -105,7 +105,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     // -----------------------------------------------------
     //                                           Export Form
     //                                           -----------
-    protected void exportFormPropertyToContext(WebContext context, ActionRuntime runtime) {
+    protected void exportFormPropertyToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
         runtime.getActionForm().ifPresent(virtualForm -> {
             final ActionFormMeta meta = virtualForm.getFormMeta();
             final Collection<ActionFormProperty> properties = meta.properties();
