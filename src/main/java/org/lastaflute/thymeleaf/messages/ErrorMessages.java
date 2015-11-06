@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.wrapper;
+package org.lastaflute.thymeleaf.messages;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,11 +23,12 @@ import org.lastaflute.web.ruts.message.ActionMessage;
 import org.lastaflute.web.ruts.message.ActionMessages;
 
 /**
- * Read-only Action Messages Wrapper.
+ * Read-only Action Messages Wrapper. <br>
+ * Accessed by Thymeleaf templates, so cannot easily refactor method names.
  * @author schatten
  * @author jflute
  */
-public class ActionMessagesWrapper implements Serializable {
+public class ErrorMessages implements Serializable {
 
     // ===================================================================================
     //                                                                          Definition
@@ -42,22 +43,22 @@ public class ActionMessagesWrapper implements Serializable {
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ActionMessagesWrapper(ActionMessages origin) {
+    public ErrorMessages(ActionMessages origin) {
         this.messages = origin;
     }
 
     // ===================================================================================
     //                                                                      Convert Access
     //                                                                      ==============
-    public List<ActionMessage> getAllMessages() {
+    public List<ActionMessage> getAll() { // e.g. th:each="error : ${errors.all}"
         List<ActionMessage> list = new ArrayList<ActionMessage>();
-        messages.accessByFlatIterator().forEachRemaining((message) -> list.add(message));
+        messages.accessByFlatIterator().forEachRemaining(message -> list.add(message));
         return list;
     }
 
-    public List<ActionMessage> getMessages(String property) {
+    public List<ActionMessage> part(String property) { // e.g. th:each="error : ${errors.part('seaName')}"
         List<ActionMessage> list = new ArrayList<ActionMessage>();
-        messages.accessByIteratorOf(property).forEachRemaining((message) -> list.add(message));
+        messages.accessByIteratorOf(property).forEachRemaining(message -> list.add(message));
         return list;
     }
 
@@ -67,28 +68,28 @@ public class ActionMessagesWrapper implements Serializable {
     /**
      * @see org.lastaflute.web.ruts.message.ActionMessages#hasMessageOf(java.lang.String)
      */
-    public boolean hasMessageOf(String property) {
+    public boolean exists(String property) { // e.g. th:unless="${errors.exists('seaName')}"
         return messages.hasMessageOf(property);
     }
 
     /**
      * @see org.lastaflute.web.ruts.message.ActionMessages#hasMessageOf(java.lang.String, java.lang.String)
      */
-    public boolean hasMessageOf(String property, String key) {
+    public boolean exists(String property, String key) { // e.g. th:unless="${errors.exists('seaName', 'errors.required')}"
         return messages.hasMessageOf(property, key);
     }
 
     /**
      * @see org.lastaflute.web.ruts.message.ActionMessages#isEmpty()
      */
-    public boolean isEmpty() {
+    public boolean isEmpty() { // e.g. th:unless="${errors.empty}"
         return messages.isEmpty();
     }
 
     /**
      * @see org.lastaflute.web.ruts.message.ActionMessages#isAccessed()
      */
-    public boolean isAccessed() {
+    public boolean isAccessed() { // e.g. th:unless="${errors.accessed}"
         return messages.isAccessed();
     }
 

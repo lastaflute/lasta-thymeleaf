@@ -48,8 +48,8 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
     //                                                                          Definition
     //                                                                          ==========
     private static final String PROPERTY_ATTRIBUTE_NAME = "property";
-    private static final String APPEND_ERROR_STYLE_CLASS = "${errors.hasMessageOf('%s')} ? 'validError'";
-    private static final String APPEND_ERROR_STYLE_CLASS_ATTRAPEND = "class=(${errors.hasMessageOf('%s')} ? ' validError')";
+    private static final String APPEND_ERROR_STYLE_CLASS = "${errors.exists('%s')} ? 'validError'";
+    private static final String APPEND_ERROR_STYLE_CLASS_ATTRAPEND = "class=(${errors.exists('%s')} ? ' validError')";
 
     protected static final String SELECT_PROPERTY_NAME = "la:selectPropertyName";
 

@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.lastaflute.di.helper.beans.PropertyDesc;
-import org.lastaflute.thymeleaf.wrapper.ActionMessagesWrapper;
+import org.lastaflute.thymeleaf.messages.ErrorMessages;
 import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.callback.ActionRuntime;
 import org.lastaflute.web.exception.RequestForwardFailureException;
@@ -89,7 +89,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                         Export Errors
     //                                         -------------
     protected void exportErrorsToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
-        context.setVariable("errors", new ActionMessagesWrapper(extractActionErrors(requestManager)));
+        context.setVariable("errors", new ErrorMessages(extractActionErrors(requestManager)));
     }
 
     protected ActionMessages extractActionErrors(RequestManager requestManager) {

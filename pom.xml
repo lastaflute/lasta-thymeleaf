@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.lastaflute.html</groupId>
 	<artifactId>lasta-thymeleaf</artifactId>
-	<version>0.2.0-F-SNAPSHOT</version> <!-- RC1 -->
+	<version>0.2.0-G-SNAPSHOT</version> <!-- RC1 -->
 	<packaging>jar</packaging>
 
 	<name>Lasta Thymeleaf</name>
