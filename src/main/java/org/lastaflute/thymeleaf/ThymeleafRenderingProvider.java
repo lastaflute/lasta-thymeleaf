@@ -108,7 +108,7 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         resolver.setPrefix(getHtmlViewPrefix());
         resolver.setTemplateMode(getTemplateMode());
         resolver.setCharacterEncoding(getEncoding());
-        resolver.setCacheable(development);
+        resolver.setCacheable(isCacheable());
         return resolver;
     }
 
@@ -126,6 +126,10 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
 
     protected String getEncoding() {
         return DEFAULT_TEMPLATE_ENCODING;
+    }
+
+    protected boolean isCacheable() {
+        return !development;
     }
 
     protected StandardMessageResolver createStandardMessageResolver() {
