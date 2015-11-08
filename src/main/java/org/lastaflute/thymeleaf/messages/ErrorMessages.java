@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lastaflute.web.ruts.message.ActionMessage;
 import org.lastaflute.web.ruts.message.ActionMessages;
 import org.lastaflute.web.servlet.request.RequestManager;
 
@@ -28,6 +27,7 @@ import org.lastaflute.web.servlet.request.RequestManager;
  * Accessed by Thymeleaf templates, so cannot easily refactor method names.
  * @author schatten
  * @author jflute
+ * @author Toshi504
  */
 public class ErrorMessages implements Serializable {
 
@@ -55,13 +55,17 @@ public class ErrorMessages implements Serializable {
     //                                                                      ==============
     public List<ResolvedMessage> getAll() { // e.g. th:each="error : ${errors.all}"
         List<ResolvedMessage> list = new ArrayList<ResolvedMessage>();
-        messages.accessByFlatIterator().forEachRemaining(message -> list.add(new ResolvedMessage(message, requestManager)));
+        messages.accessByFlatIterator().forEachRemaining(message -> {
+            list.add(new ResolvedMessage(message, requestManager));
+        });
         return list;
     }
 
     public List<ResolvedMessage> part(String property) { // e.g. th:each="error : ${errors.part('seaName')}"
         List<ResolvedMessage> list = new ArrayList<ResolvedMessage>();
-        messages.accessByIteratorOf(property).forEachRemaining(message -> list.add(new ResolvedMessage(message, requestManager)));
+        messages.accessByIteratorOf(property).forEachRemaining(message -> {
+            list.add(new ResolvedMessage(message, requestManager));
+        });
         return list;
     }
 
