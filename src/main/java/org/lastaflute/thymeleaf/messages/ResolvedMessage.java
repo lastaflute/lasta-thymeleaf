@@ -1,5 +1,6 @@
 package org.lastaflute.thymeleaf.messages;
 
+import java.io.Serializable;
 import java.util.Locale;
 
 import org.lastaflute.core.message.MessageManager;
@@ -10,7 +11,7 @@ import org.lastaflute.web.servlet.request.RequestManager;
  * 
  * @author Toshi504
  */
-public class ResolvedMessage extends ActionMessage {
+public class ResolvedMessage implements Serializable {
     
     // ===================================================================================
     //                                                                          Definition
@@ -20,19 +21,21 @@ public class ResolvedMessage extends ActionMessage {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected MessageManager messageManager;
-    protected RequestManager requestManager;
+    protected final ActionMessage message;
+    protected final RequestManager requestManager;
     
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ResolvedMessage(String key, boolean resource) {
-        super(key, resource);
+    public ResolvedMessage(ActionMessage origin, RequestManager requestManager) {
+        this.message = origin;
+        this.requestManager = requestManager;
     }
     
     public String getMessage() {
         Locale locale = requestManager.getUserLocale();
-        return super.isResource() ? messageManager.getMessage(locale, super.key) : super.key;
+        MessageManager messageManager = requestManager.getMessageManager();
+        return message.isResource() ? messageManager.getMessage(locale, message.getKey()) :  message.getKey();
     }
 
 }

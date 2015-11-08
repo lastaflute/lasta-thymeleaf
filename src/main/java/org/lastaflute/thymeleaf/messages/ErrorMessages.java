@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.lastaflute.web.ruts.message.ActionMessage;
 import org.lastaflute.web.ruts.message.ActionMessages;
+import org.lastaflute.web.servlet.request.RequestManager;
 
 /**
  * Read-only Action Messages Wrapper. <br>
@@ -39,26 +40,28 @@ public class ErrorMessages implements Serializable {
     //                                                                           Attribute
     //                                                                           =========
     protected final ActionMessages messages;
+    protected final RequestManager requestManager;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ErrorMessages(ActionMessages origin) {
+    public ErrorMessages(ActionMessages origin, RequestManager requestManager) {
         this.messages = origin;
+        this.requestManager = requestManager;
     }
 
     // ===================================================================================
     //                                                                      Convert Access
     //                                                                      ==============
-    public List<ActionMessage> getAll() { // e.g. th:each="error : ${errors.all}"
-        List<ActionMessage> list = new ArrayList<ActionMessage>();
-        messages.accessByFlatIterator().forEachRemaining(message -> list.add(message));
+    public List<ResolvedMessage> getAll() { // e.g. th:each="error : ${errors.all}"
+        List<ResolvedMessage> list = new ArrayList<ResolvedMessage>();
+        messages.accessByFlatIterator().forEachRemaining(message -> list.add(new ResolvedMessage(message, requestManager)));
         return list;
     }
 
-    public List<ActionMessage> part(String property) { // e.g. th:each="error : ${errors.part('seaName')}"
-        List<ActionMessage> list = new ArrayList<ActionMessage>();
-        messages.accessByIteratorOf(property).forEachRemaining(message -> list.add(message));
+    public List<ResolvedMessage> part(String property) { // e.g. th:each="error : ${errors.part('seaName')}"
+        List<ResolvedMessage> list = new ArrayList<ResolvedMessage>();
+        messages.accessByIteratorOf(property).forEachRemaining(message -> list.add(new ResolvedMessage(message, requestManager)));
         return list;
     }
 
