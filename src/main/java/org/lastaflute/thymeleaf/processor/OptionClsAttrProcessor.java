@@ -117,7 +117,7 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "selected")) {
             String selectPropertyNamme = getParentSelectPropertyName(element);
             if (selectPropertyNamme != null) {
-                map.put("th:selected", String.format("${%s.code()} == ${%s}", spec.getIterVarName(), selectPropertyNamme));
+                map.put("th:selected", String.format("${%s} == ${%s}", spec.getIterVarName(), selectPropertyNamme));
             }
         }
         return map;
