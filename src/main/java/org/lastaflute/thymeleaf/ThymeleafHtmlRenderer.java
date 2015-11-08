@@ -89,7 +89,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                         Export Errors
     //                                         -------------
     protected void exportErrorsToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
-        context.setVariable("errors", new ErrorMessages(extractActionErrors(requestManager)));
+        context.setVariable("errors", new ErrorMessages(extractActionErrors(requestManager), requestManager));
     }
 
     protected ActionMessages extractActionErrors(RequestManager requestManager) {
