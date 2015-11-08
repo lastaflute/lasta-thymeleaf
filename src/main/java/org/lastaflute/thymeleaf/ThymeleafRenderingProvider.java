@@ -41,7 +41,16 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
+    protected boolean development;
     private TemplateEngine cachedTemplateEngine;
+
+    // ===================================================================================
+    //                                                                              Option
+    //                                                                              ======
+    public ThymeleafRenderingProvider asDevelopment(boolean development) {
+        this.development = development;
+        return this;
+    }
 
     // ===================================================================================
     //                                                                             Provide
@@ -78,7 +87,7 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
 
     protected TemplateEngine createTemplateEngine() {
         final TemplateEngine engine = newTemplateEngine();
-        setupTemplateEngin(engine);
+        setupTemplateEngine(engine);
         return engine;
     }
 
@@ -86,28 +95,29 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         return new TemplateEngine();
     }
 
-    protected void setupTemplateEngin(TemplateEngine engine) {
+    protected void setupTemplateEngine(TemplateEngine engine) {
         engine.addTemplateResolver(createTemplateResolver());
-
-        final StandardMessageResolver standardMessageResolver = new StandardMessageResolver();
-        standardMessageResolver.setOrder(1);
-        engine.addMessageResolver(standardMessageResolver);
-
-        final LastaThymeleafMessageResolver lastaThymeleafMessageResolver = new LastaThymeleafMessageResolver();
-        lastaThymeleafMessageResolver.setOrder(10);
-        engine.addMessageResolver(lastaThymeleafMessageResolver);
-
-        LastaThymeleafDialect dialect = new LastaThymeleafDialect(engine.getConfiguration());
-        engine.addDialect(dialect);
+        engine.addMessageResolver(createStandardMessageResolver());
+        engine.addMessageResolver(createLastaThymeleafMessageResolver());
+        engine.addDialect(createLastaThymeleafDialect(engine));
 
     }
 
     protected TemplateResolver createTemplateResolver() {
-        final ServletContextTemplateResolver resolver = new ServletContextTemplateResolver();
-        resolver.setPrefix(LaServletContextUtil.getJspViewPrefix());
+        final ServletContextTemplateResolver resolver = newServletContextTemplateResolver();
+        resolver.setPrefix(getHtmlViewPrefix());
         resolver.setTemplateMode(getTemplateMode());
         resolver.setCharacterEncoding(getEncoding());
+        resolver.setCacheable(development);
         return resolver;
+    }
+
+    protected ServletContextTemplateResolver newServletContextTemplateResolver() {
+        return new ServletContextTemplateResolver();
+    }
+
+    protected String getHtmlViewPrefix() {
+        return LaServletContextUtil.getHtmlViewPrefix();
     }
 
     protected String getTemplateMode() {
@@ -116,5 +126,21 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
 
     protected String getEncoding() {
         return DEFAULT_TEMPLATE_ENCODING;
+    }
+
+    protected StandardMessageResolver createStandardMessageResolver() {
+        final StandardMessageResolver resolver = new StandardMessageResolver();
+        resolver.setOrder(1);
+        return resolver;
+    }
+
+    protected LastaThymeleafMessageResolver createLastaThymeleafMessageResolver() {
+        final LastaThymeleafMessageResolver resolver = new LastaThymeleafMessageResolver();
+        resolver.setOrder(10);
+        return resolver;
+    }
+
+    protected LastaThymeleafDialect createLastaThymeleafDialect(TemplateEngine engine) {
+        return new LastaThymeleafDialect(engine.getConfiguration());
     }
 }

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.lastaflute.html</groupId>
 	<artifactId>lasta-thymeleaf</artifactId>
-	<version>0.2.0-G-SNAPSHOT</version> <!-- RC1 -->
+	<version>0.2.0-H-SNAPSHOT</version> <!-- RC1 -->
 	<packaging>jar</packaging>
 
 	<name>Lasta Thymeleaf</name>
@@ -12,7 +12,7 @@
 	<inceptionYear>2015</inceptionYear>
 
 	<properties>
-		<lastaflute.version>0.6.4</lastaflute.version>
+		<lastaflute.version>0.6.5-P-SNAPSHOT</lastaflute.version>
 		<thymeleaf.version>2.1.4.RELEASE</thymeleaf.version>
 		<javassist.version>3.20.0-GA</javassist.version> <!-- latest version without thymeleaf -->
 		<servlet.version>3.1.0</servlet.version>
