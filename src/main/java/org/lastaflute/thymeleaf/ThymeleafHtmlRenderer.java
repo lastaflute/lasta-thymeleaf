@@ -28,12 +28,12 @@ import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.thymeleaf.messages.ErrorMessages;
 import org.lastaflute.web.LastaWebKey;
-import org.lastaflute.web.callback.ActionRuntime;
 import org.lastaflute.web.exception.RequestForwardFailureException;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.config.ActionFormMeta;
 import org.lastaflute.web.ruts.config.ActionFormProperty;
 import org.lastaflute.web.ruts.message.ActionMessages;
+import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
 import org.thymeleaf.TemplateEngine;
@@ -89,17 +89,29 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                         Export Errors
     //                                         -------------
     protected void exportErrorsToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
-        context.setVariable("errors", new ErrorMessages(extractActionErrors(requestManager), requestManager));
+        context.setVariable("errors", createErrorMessages(requestManager));
     }
 
-    protected ActionMessages extractActionErrors(RequestManager requestManager) {
-        return requestManager.getAttribute(getMessagesAttributeKey(), ActionMessages.class).orElseGet(() -> {
-            return new ActionMessages();
+    protected ErrorMessages createErrorMessages(RequestManager requestManager) {
+        return new ErrorMessages(extractActionErrors(requestManager), requestManager);
+    }
+
+    protected ActionMessages extractActionErrors(RequestManager requestManager) { // from request and session
+        final String attributeKey = getMessagesAttributeKey();
+        final Class<ActionMessages> attributeType = ActionMessages.class;
+        return requestManager.getAttribute(attributeKey, ActionMessages.class).orElseGet(() -> {
+            return requestManager.getSessionManager().getAttribute(attributeKey, attributeType).orElseGet(() -> {
+                return createEmptyMessages();
+            });
         });
     }
 
     protected String getMessagesAttributeKey() {
         return LastaWebKey.ACTION_ERRORS_KEY;
+    }
+
+    protected ActionMessages createEmptyMessages() {
+        return new ActionMessages();
     }
 
     // -----------------------------------------------------

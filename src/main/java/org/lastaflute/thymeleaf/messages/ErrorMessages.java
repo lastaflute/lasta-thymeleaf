@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dbflute.util.DfTypeUtil;
+import org.lastaflute.web.ruts.message.ActionMessage;
 import org.lastaflute.web.ruts.message.ActionMessages;
 import org.lastaflute.web.servlet.request.RequestManager;
 
@@ -56,7 +58,7 @@ public class ErrorMessages implements Serializable {
     public List<ResolvedMessage> getAll() { // e.g. th:each="error : ${errors.all}"
         List<ResolvedMessage> list = new ArrayList<ResolvedMessage>();
         messages.accessByFlatIterator().forEachRemaining(message -> {
-            list.add(new ResolvedMessage(message, requestManager));
+            list.add(createResolvedMessage(message));
         });
         return list;
     }
@@ -64,9 +66,13 @@ public class ErrorMessages implements Serializable {
     public List<ResolvedMessage> part(String property) { // e.g. th:each="error : ${errors.part('seaName')}"
         List<ResolvedMessage> list = new ArrayList<ResolvedMessage>();
         messages.accessByIteratorOf(property).forEachRemaining(message -> {
-            list.add(new ResolvedMessage(message, requestManager));
+            list.add(createResolvedMessage(message));
         });
         return list;
+    }
+
+    protected ResolvedMessage createResolvedMessage(ActionMessage message) {
+        return new ResolvedMessage(message, requestManager);
     }
 
     // ===================================================================================
@@ -112,5 +118,13 @@ public class ErrorMessages implements Serializable {
      */
     public int size(String property) {
         return messages.size(property);
+    }
+
+    // ===================================================================================
+    //                                                                      Basic Override
+    //                                                                      ==============
+    @Override
+    public String toString() { // for request attribute logging
+        return DfTypeUtil.toClassTitle(this) + ":{messages=" + messages + "}@" + Integer.toHexString(hashCode());
     }
 }
