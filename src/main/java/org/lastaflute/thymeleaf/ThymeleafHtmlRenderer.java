@@ -25,17 +25,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
+import org.dbflute.util.Srl;
 import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.thymeleaf.messages.ErrorMessages;
 import org.lastaflute.web.LastaWebKey;
-import org.lastaflute.web.callback.ActionRuntime;
 import org.lastaflute.web.exception.RequestForwardFailureException;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.config.ActionFormMeta;
 import org.lastaflute.web.ruts.config.ActionFormProperty;
 import org.lastaflute.web.ruts.message.ActionMessages;
+import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
 
@@ -48,6 +51,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
+    private static final Logger logger = LoggerFactory.getLogger(ThymeleafHtmlRenderer.class);
     public static final String DEFAULT_HTML_ENCODING = "UTF-8";
 
     // ===================================================================================
@@ -67,11 +71,19 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                                                              ======
     @Override
     public void render(RequestManager requestManager, ActionRuntime runtime, NextJourney journey) throws IOException, ServletException {
+        showRendering(journey);
         final WebContext context = createTemplateContext(requestManager);
         exportErrorsToContext(requestManager, context, runtime);
         exportFormPropertyToContext(requestManager, context, runtime);
         final String html = createResponseBody(templateEngine, context, runtime, journey);
         write(requestManager, html);
+    }
+
+    protected void showRendering(NextJourney journey) {
+        if (logger.isDebugEnabled()) {
+            final String pureName = Srl.substringLastRear(journey.getRoutingPath(), "/");
+            logger.debug("#flow ...Rendering {} by #thymeleaf template", pureName);
+        }
     }
 
     // -----------------------------------------------------
@@ -89,17 +101,29 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                         Export Errors
     //                                         -------------
     protected void exportErrorsToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
-        context.setVariable("errors", new ErrorMessages(extractActionErrors(requestManager), requestManager));
+        context.setVariable("errors", createErrorMessages(requestManager));
     }
 
-    protected ActionMessages extractActionErrors(RequestManager requestManager) {
-        return requestManager.getAttribute(getMessagesAttributeKey(), ActionMessages.class).orElseGet(() -> {
-            return new ActionMessages();
+    protected ErrorMessages createErrorMessages(RequestManager requestManager) {
+        return new ErrorMessages(extractActionErrors(requestManager), requestManager);
+    }
+
+    protected ActionMessages extractActionErrors(RequestManager requestManager) { // from request and session
+        final String attributeKey = getMessagesAttributeKey();
+        final Class<ActionMessages> attributeType = ActionMessages.class;
+        return requestManager.getAttribute(attributeKey, ActionMessages.class).orElseGet(() -> {
+            return requestManager.getSessionManager().getAttribute(attributeKey, attributeType).orElseGet(() -> {
+                return createEmptyMessages();
+            });
         });
     }
 
     protected String getMessagesAttributeKey() {
         return LastaWebKey.ACTION_ERRORS_KEY;
+    }
+
+    protected ActionMessages createEmptyMessages() {
+        return new ActionMessages();
     }
 
     // -----------------------------------------------------

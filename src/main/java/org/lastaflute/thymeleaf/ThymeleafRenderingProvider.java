@@ -16,8 +16,9 @@
 package org.lastaflute.thymeleaf;
 
 import org.lastaflute.thymeleaf.processor.LastaThymeleafDialect;
-import org.lastaflute.web.callback.ActionRuntime;
+import org.lastaflute.web.response.HtmlResponse;
 import org.lastaflute.web.ruts.NextJourney;
+import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.ruts.renderer.HtmlRenderingProvider;
 import org.lastaflute.web.util.LaServletContextUtil;
@@ -59,14 +60,23 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
      * @param runtime The runtime of current requested action. (NotNull)
      * @param journey The journey to next stage. (NotNull)
      * @return The renderer to render HTML. (NotNull)
-     * @see org.lastaflute.web.ruts.renderer.HtmlRenderingProvider#provideRenderer(org.lastaflute.web.callback.ActionRuntime, org.lastaflute.web.ruts.NextJourney)
+     * @see org.lastaflute.web.ruts.renderer.HtmlRenderingProvider#provideRenderer(org.lastaflute.web.ruts.process.ActionRuntime, org.lastaflute.web.ruts.NextJourney)
      */
     @Override
     public HtmlRenderer provideRenderer(ActionRuntime runtime, NextJourney journey) {
         if (journey.getRoutingPath().endsWith(".jsp")) {
             return DEFAULT_RENDERER;
         }
+        return createThymeleafHtmlRenderer();
+    }
+
+    protected ThymeleafHtmlRenderer createThymeleafHtmlRenderer() {
         return new ThymeleafHtmlRenderer(getTemplateEngine());
+    }
+
+    @Override
+    public HtmlResponse provideShowErrorsResponse(ActionRuntime runtime) {
+        return HtmlResponse.fromForwardPath("/error/show_errors.html");
     }
 
     // ===================================================================================
