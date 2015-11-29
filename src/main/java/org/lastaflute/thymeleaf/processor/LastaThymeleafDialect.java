@@ -80,6 +80,31 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
         return new LinkedHashSet<IProcessor>(processors);
     }
 
+    protected Set<IProcessor> createLastaProcessorsSet() {
+        final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
+        processors.add(createForEachAttrProcessor());
+        processors.add(createOptionClsAttrProcessor());
+        processors.add(createPropertyAttrProcessor());
+        processors.add(createTokenAttrProcessor());
+        return processors;
+    }
+
+    protected static ForEachAttrProcessor createForEachAttrProcessor() {
+        return new ForEachAttrProcessor();
+    }
+
+    protected static OptionClsAttrProcessor createOptionClsAttrProcessor() {
+        return new OptionClsAttrProcessor();
+    }
+
+    protected PropertyAttrProcessor createPropertyAttrProcessor() {
+        return new PropertyAttrProcessor();
+    }
+
+    protected static TokenAttrProcessor createTokenAttrProcessor() {
+        return new TokenAttrProcessor();
+    }
+
     /**
      * @see org.thymeleaf.dialect.IExpressionEnhancingDialect#getAdditionalExpressionObjects(org.thymeleaf.context.IProcessingContext)
      */
@@ -89,14 +114,6 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
         map.put("handydate", new ExpressionHandyDateProcessor());
         map.put("cdef", new ExpressionCDefProcessor(processingContext));
         return map;
-    }
-
-    public static Set<IProcessor> createLastaProcessorsSet() {
-        final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
-        processors.add(new PropertyAttrProcessor());
-        processors.add(new OptionClsAttrProcessor());
-        processors.add(new ForEachAttrProcessor());
-        return processors;
     }
 
     // ===================================================================================
