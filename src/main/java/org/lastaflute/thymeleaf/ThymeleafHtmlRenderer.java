@@ -29,8 +29,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.dbflute.util.Srl;
+import org.lastaflute.core.util.ContainerUtil;
 import org.lastaflute.di.helper.beans.PropertyDesc;
-import org.lastaflute.thymeleaf.errors.ThymeleafReservationWordDataKeyException;
+import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyConflictingWithRegisteredDataException;
+import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyUsingReservedWordException;
+import org.lastaflute.thymeleaf.exception.ThymeleafResisteredDataUsingReservedWordException;
 import org.lastaflute.thymeleaf.messages.ErrorMessages;
 import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.exception.RequestForwardFailureException;
@@ -42,6 +45,7 @@ import org.lastaflute.web.ruts.message.ActionMessages;
 import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
+import org.lastaflute.web.token.DoubleSubmitManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -60,8 +64,12 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     private static final Logger logger = LoggerFactory.getLogger(ThymeleafHtmlRenderer.class);
 
     public static final String DEFAULT_HTML_ENCODING = "UTF-8";
+
+    // avoid conflicting with form property as best one can
     public static final String VARIABLE_ERRORS = "errors";
+    public static final String VARIABLE_TOKEN = "token";
     public static final String VARIABLE_VERSION_QUERY = "vq";
+
     protected static final Set<String> reservedWordSet;
 
     static {
@@ -121,25 +129,14 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                         -------------
     protected void exportErrorsToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
         setupVariableErrors(requestManager, context, runtime);
+        setupVariableToken(requestManager, context, runtime);
         setupVariableVersionQuery(requestManager, context, runtime);
     }
 
     protected void setupVariableErrors(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
         final String varKey = VARIABLE_ERRORS;
-        final VariablesMap<String, Object> variables = context.getVariables();
-        if (variables.containsKey(varKey)) {
-            throwThymeleafReservationWordDataKeyException(runtime, variables, varKey);
-        }
+        checkRegisteredDataUsingReservedWord(runtime, context, varKey);
         context.setVariable(varKey, createErrorMessages(requestManager));
-    }
-
-    protected void setupVariableVersionQuery(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
-        final String varKey = VARIABLE_VERSION_QUERY;
-        final VariablesMap<String, Object> variables = context.getVariables();
-        if (variables.containsKey(varKey)) {
-            throwThymeleafReservationWordDataKeyException(runtime, variables, varKey);
-        }
-        context.setVariable(varKey, VERSION_QUERY);
     }
 
     protected ErrorMessages createErrorMessages(RequestManager requestManager) {
@@ -164,7 +161,43 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         return new ActionMessages();
     }
 
-    protected void throwThymeleafReservationWordDataKeyException(ActionRuntime runtime, VariablesMap<String, Object> variables,
+    protected void setupVariableToken(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
+        final String varKey = VARIABLE_TOKEN;
+        checkRegisteredDataUsingReservedWord(runtime, context, varKey);
+        // #pending can get from request manager by lastaflute next version
+        final DoubleSubmitManager doubleSubmitManager = ContainerUtil.getComponent(DoubleSubmitManager.class);
+        doubleSubmitManager.getSessionTokenMap().ifPresent(tokenMap -> {
+            tokenMap.get(runtime.getActionType()).ifPresent(token -> {
+                context.setVariable(varKey, token);
+            });
+        });
+    }
+
+    protected void setupVariableVersionQuery(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
+        final String varKey = VARIABLE_VERSION_QUERY;
+        checkRegisteredDataUsingReservedWord(runtime, context, varKey);
+        context.setVariable(varKey, VERSION_QUERY);
+    }
+
+    // -----------------------------------------------------
+    //                                         Reserved Word
+    //                                         -------------
+    // Thymeleaf's reserved words are already checked in Thymeleaf process so no check them here
+    protected void checkRegisteredDataUsingReservedWord(ActionRuntime runtime, WebContext context, String varKey) {
+        if (isSuppressRegisteredDataUsingReservedWordCheck()) {
+            return;
+        }
+        final VariablesMap<String, Object> variableMap = context.getVariables();
+        if (variableMap.containsKey(varKey)) {
+            throwThymeleafRegisteredDataUsingReservedWordException(runtime, variableMap, varKey);
+        }
+    }
+
+    protected boolean isSuppressRegisteredDataUsingReservedWordCheck() {
+        return false;
+    }
+
+    protected void throwThymeleafRegisteredDataUsingReservedWordException(ActionRuntime runtime, VariablesMap<String, Object> variables,
             String dataKey) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Cannot use the data key '" + dataKey + "' .");
@@ -190,12 +223,12 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         br.addItem("Reserved Word");
         br.addElement(reservedWordSet);
         final String msg = br.buildExceptionMessage();
-        throw new ThymeleafReservationWordDataKeyException(msg);
+        throw new ThymeleafResisteredDataUsingReservedWordException(msg);
     }
 
-    // -----------------------------------------------------
-    //                                           Export Form
-    //                                           -----------
+    // ===================================================================================
+    //                                                                         Export Form
+    //                                                                         ===========
     protected void exportFormPropertyToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
         runtime.getActionForm().ifPresent(virtualForm -> {
             final ActionFormMeta meta = virtualForm.getFormMeta();
@@ -204,12 +237,12 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
                 return;
             }
             final Object form = virtualForm.getRealForm();
+            final VariablesMap<String, Object> variableMap = context.getVariables();
             for (ActionFormProperty property : properties) {
                 if (isExportableProperty(property.getPropertyDesc())) {
                     final String propertyName = property.getPropertyName();
-                    if (reservedWordSet.contains(propertyName)) {
-                        throwThymeleafReservationWordFormPropertyException(runtime, virtualForm, propertyName);
-                    }
+                    checkFormPropertyUsingReservedWord(runtime, virtualForm, propertyName);
+                    checkFormPropertyConflictingWithRegisteredData(runtime, variableMap, propertyName);
                     final Object propertyValue = property.getPropertyValue(form);
                     if (propertyValue != null) {
                         context.setVariable(propertyName, propertyValue);
@@ -223,7 +256,23 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         return !pd.getPropertyType().getName().startsWith("javax.servlet");
     }
 
-    protected void throwThymeleafReservationWordFormPropertyException(ActionRuntime runtime, VirtualActionForm virtualForm,
+    // -----------------------------------------------------
+    //                                         Reserved Word
+    //                                         -------------
+    protected void checkFormPropertyUsingReservedWord(ActionRuntime runtime, VirtualActionForm virtualForm, final String propertyName) {
+        if (isSuppressFormPropertyUsingReservedWordCheck()) {
+            return;
+        }
+        if (reservedWordSet.contains(propertyName)) {
+            throwThymeleafFormPropertyUsingReservedWordException(runtime, virtualForm, propertyName);
+        }
+    }
+
+    protected boolean isSuppressFormPropertyUsingReservedWordCheck() {
+        return false;
+    }
+
+    protected void throwThymeleafFormPropertyUsingReservedWordException(ActionRuntime runtime, VirtualActionForm virtualForm,
             String propertyName) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Cannot use the property name '" + propertyName + "' in form.");
@@ -243,7 +292,46 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         br.addItem("Reserved Word");
         br.addElement(reservedWordSet);
         final String msg = br.buildExceptionMessage();
-        throw new ThymeleafReservationWordDataKeyException(msg);
+        throw new ThymeleafFormPropertyUsingReservedWordException(msg);
+    }
+
+    // -----------------------------------------------------
+    //                                    Conflict with Data
+    //                                    ------------------
+    protected void checkFormPropertyConflictingWithRegisteredData(ActionRuntime runtime, VariablesMap<String, Object> variableMap,
+            String propertyName) {
+        if (variableMap.containsKey(propertyName)) {
+            throwThymeleafFormPropertyConflictingWithRegisteredDataException(runtime, variableMap, propertyName);
+        }
+    }
+
+    protected void throwThymeleafFormPropertyConflictingWithRegisteredDataException(ActionRuntime runtime,
+            VariablesMap<String, Object> variableMap, String conflictedName) {
+        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+        br.addNotice("Conflictingbetween form property and registered data.");
+        br.addItem("Advice");
+        br.addElement("Use unique names for form property or registered data.");
+        br.addElement("For example:");
+        br.addElement("  (x):");
+        br.addElement("    public String sea; // *Bad");
+        br.addElement("    ...");
+        br.addElement("    return asHtml(...).renderWith(data -> {");
+        br.addElement("        data.register(\"sea\", ...); // *Bad");
+        br.addElement("    });");
+        br.addElement("  (o):");
+        br.addElement("    public String sea; // Good");
+        br.addElement("    ...");
+        br.addElement("    return asHtml(...).renderWith(data -> {");
+        br.addElement("        data.register(\"land\", ...); // Good");
+        br.addElement("    });");
+        br.addItem("Action");
+        br.addElement(runtime);
+        br.addItem("Variable Map");
+        br.addElement(variableMap);
+        br.addItem("Conflicted Name");
+        br.addElement(conflictedName);
+        final String msg = br.buildExceptionMessage();
+        throw new ThymeleafFormPropertyConflictingWithRegisteredDataException(msg);
     }
 
     // -----------------------------------------------------

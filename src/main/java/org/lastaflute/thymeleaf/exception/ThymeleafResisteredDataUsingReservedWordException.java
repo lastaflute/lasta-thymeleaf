@@ -13,22 +13,22 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.errors;
+package org.lastaflute.thymeleaf.exception;
 
 import org.lastaflute.core.exception.LaSystemException;
 
 /**
  * @author jflute
  */
-public class ThymeleafReservationWordDataKeyException extends LaSystemException {
+public class ThymeleafResisteredDataUsingReservedWordException extends LaSystemException {
 
     private static final long serialVersionUID = 1L;
 
-    public ThymeleafReservationWordDataKeyException(String msg) {
+    public ThymeleafResisteredDataUsingReservedWordException(String msg) {
         super(msg);
     }
 
-    public ThymeleafReservationWordDataKeyException(String msg, Throwable cause) {
+    public ThymeleafResisteredDataUsingReservedWordException(String msg, Throwable cause) {
         super(msg, cause);
     }
 }
