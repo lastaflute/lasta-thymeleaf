@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor;
+package org.lastaflute.thymeleaf.processor.attr;
 
 import org.lastaflute.thymeleaf.internal.processor.attr.AbstractIterationAttrProcessor;
 import org.thymeleaf.Arguments;
@@ -79,7 +79,7 @@ public class ForEachAttrProcessor extends AbstractIterationAttrProcessor {
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    protected ForEachAttrProcessor() {
+    public ForEachAttrProcessor() {
         super(ATTR_NAME);
     }
 
@@ -109,8 +109,7 @@ public class ForEachAttrProcessor extends AbstractIterationAttrProcessor {
      * @see org.thymeleaf.standard.processor.attr.AbstractStandardIterationAttrProcessor#getIterationSpec(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
      */
     @Override
-    protected final IterationSpec getIterationSpec(
-            final Arguments arguments, final Element element, final String attributeName) {
+    protected final IterationSpec getIterationSpec(final Arguments arguments, final Element element, final String attributeName) {
 
         final String attributeValue = element.getAttributeValue(attributeName);
 
@@ -134,14 +133,12 @@ public class ForEachAttrProcessor extends AbstractIterationAttrProcessor {
 
         final String iterVarName = (iterVarValue == null ? null : iterVarValue.toString());
         if (StringUtils.isEmptyOrWhitespace(iterVarName)) {
-            throw new TemplateProcessingException(
-                    "Iteration variable name expression evaluated as null: \"" + iterVarExpr + "\"");
+            throw new TemplateProcessingException("Iteration variable name expression evaluated as null: \"" + iterVarExpr + "\"");
         }
 
         final String statusVarName = (statusVarValue == null ? null : statusVarValue.toString());
         if (statusVarExpr != null && StringUtils.isEmptyOrWhitespace(statusVarName)) {
-            throw new TemplateProcessingException(
-                    "Status variable name expression evaluated as null or empty: \"" + statusVarExpr + "\"");
+            throw new TemplateProcessingException("Status variable name expression evaluated as null or empty: \"" + statusVarExpr + "\"");
         }
 
         // Extends form property path access.
@@ -176,8 +173,8 @@ public class ForEachAttrProcessor extends AbstractIterationAttrProcessor {
      * @see org.thymeleaf.processor.attr.AbstractIterationAttrProcessor#processAttribute(Arguments, Element, String) Original
      */
     @Override
-    protected void prepareLocalVariablesForEachIterationItem(final Element clonedElement, final IterationSpec iterationSpec,
-            final int size, int index, final Object obj) {
+    protected void prepareLocalVariablesForEachIterationItem(final Element clonedElement, final IterationSpec iterationSpec, final int size,
+            int index, final Object obj) {
         final String iterVar = iterationSpec.getIterVarName();
         final String statusVar = iterationSpec.getStatusVarName();
         /*

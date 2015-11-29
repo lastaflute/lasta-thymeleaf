@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor;
+package org.lastaflute.thymeleaf.processor.attr;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +81,7 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    protected OptionClsAttrProcessor() {
+    public OptionClsAttrProcessor() {
         super(new AttributeNameProcessorMatcher(OPTION_CLS_ATTRIBUTE_NAME, OPTION_CLS_ELEMENT_TARGET));
     }
 
@@ -107,12 +107,13 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
         IterationSpec spec = getIterationSpec(arguments, element, attributeName);
 
         Map<String, String> map = new HashMap<String, String>();
-        map.put("th:each", String.format("%s, %s : ${#cdef.values('%s')}", spec.getIterVarName(), spec.getStatusVarName() ,spec.getClassificationName()));
+        map.put("th:each", String.format("%s, %s : ${#cdef.values('%s')}", spec.getIterVarName(), spec.getStatusVarName(),
+                spec.getClassificationName()));
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "value")) {
-            map.put("th:value", String.format("${#cdef.code(%s)}",spec.getIterVarName()));
+            map.put("th:value", String.format("${#cdef.code(%s)}", spec.getIterVarName()));
         }
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "text")) {
-            map.put("th:text", String.format("${#cdef.alias(%s)}",spec.getIterVarName()));
+            map.put("th:text", String.format("${#cdef.alias(%s)}", spec.getIterVarName()));
         }
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "selected")) {
             String selectPropertyNamme = getParentSelectPropertyName(element);
@@ -125,12 +126,12 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
 
     protected String getParentSelectPropertyName(Element element) {
         if (element.hasNodeProperty(PropertyAttrProcessor.SELECT_PROPERTY_NAME)) {
-            return (String)element.getNodeProperty(PropertyAttrProcessor.SELECT_PROPERTY_NAME);
+            return (String) element.getNodeProperty(PropertyAttrProcessor.SELECT_PROPERTY_NAME);
         }
         if ("select".equals(element.getNormalizedName())) {
             return null;
         }
-        return getParentSelectPropertyName((Element)element.getParent());
+        return getParentSelectPropertyName((Element) element.getParent());
     }
 
     /**
@@ -174,7 +175,8 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
             final IStandardExpression expression = parser.parseExpression(configuration, arguments, attributeValue);
 
             String classificationName = expression.execute(configuration, arguments).toString();
-            return new IterationSpec(DEFAULT_ITERATION_VALUE, DEFAULT_ITERATION_VALUE + AbstractIterationAttrProcessor.DEFAULT_STATUS_VAR_SUFFIX, classificationName);
+            return new IterationSpec(DEFAULT_ITERATION_VALUE,
+                    DEFAULT_ITERATION_VALUE + AbstractIterationAttrProcessor.DEFAULT_STATUS_VAR_SUFFIX, classificationName);
         }
 
         String classification = attributeValue.substring(separateIndex + 1).trim();

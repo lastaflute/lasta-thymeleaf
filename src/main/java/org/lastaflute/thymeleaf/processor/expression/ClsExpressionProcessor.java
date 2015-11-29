@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor;
+package org.lastaflute.thymeleaf.processor.expression;
 
 import java.util.List;
 import java.util.Locale;
@@ -23,7 +23,6 @@ import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.dbflute.jdbc.Classification;
 import org.dbflute.jdbc.ClassificationMeta;
 import org.dbflute.optional.OptionalThing;
-import org.dbflute.optional.OptionalThingFunction;
 import org.lastaflute.core.direction.FwAssistantDirector;
 import org.lastaflute.core.util.ContainerUtil;
 import org.lastaflute.db.dbflute.classification.ListedClassificationProvider;
@@ -49,7 +48,7 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  * </pre>
  * @author schatten
  */
-public class ExpressionCDefProcessor {
+public class ClsExpressionProcessor {
 
     // ===================================================================================
     //                                                                           Attribute
@@ -59,95 +58,87 @@ public class ExpressionCDefProcessor {
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ExpressionCDefProcessor(IProcessingContext processingContext) {
+    public ClsExpressionProcessor(IProcessingContext processingContext) {
         this.processingContext = processingContext;
     }
 
     // ===================================================================================
     //                                                                          Expression
     //                                                                          ==========
+    // -----------------------------------------------------
+    //                                              values()
+    //                                              --------
     /**
-     * Get Classification values.
-     * @param type classification-name
-     * @return classification values
+     * Get classification values.
+     * @param classificationName The name of classification (NotNull)
+     * @return The list of the classification. (NotNull)
      */
-    public List<Classification> values(String type) {
-        try {
-            final ClassificationMeta meta = findClassificationMeta((String) type, new Supplier<Object>() {
-                public Object get() {
-                    return "${#cdef.values('" + type + "')}";
-                }
-            });
-            return meta.listAll();
-        } catch (Exception e) {
-            throw new TemplateProcessingException(e.getMessage(), e);
-        }
+    public List<Classification> values(String classificationName) {
+        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
+            return "${#cdef.values('" + classificationName + "')}";
+        });
+        return meta.listAll();
     }
 
+    // -----------------------------------------------------
+    //                                               alias()
+    //                                               -------
     /**
      * Get Classification alias.
-     * @param def classification
+     * @param def The instance of classification to get code. (NotNull)
      * @return classification alias. (non classification is return null)
      */
     public String alias(Object def) {
         if (def instanceof Classification) {
             return findClassificationAlias((Classification) def);
         }
+        // TODO jflute exception? (2015/11/29)
         return null;
     }
 
     /**
-     * Get Classification alias.
-     * @param type classification-name
-     * @param name classification element name
-     * @return classification alias
+     * Get classification alias.
+     * @param classificationName The name of classification. (NotNull)
+     * @param elementName The name of classification element. (NotNull)
+     * @return classification alias (NullAllowed: if not found)
      */
-    public String alias(String type, String name) {
-        try {
-            final ClassificationMeta meta = findClassificationMeta((String) type, new Supplier<Object>() {
-                public Object get() {
-                    return "${#cdef.alias('" + type + "', '" + name + "')}";
-                }
-            });
-            Classification def = meta.nameOf(name);
-            return def == null ? null : findClassificationAlias(def);
-        } catch (Exception e) {
-            throw new TemplateProcessingException(e.getMessage(), e);
-        }
+    public String alias(String classificationName, String elementName) {
+        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
+            return "${#cdef.alias('" + classificationName + "', '" + elementName + "')}";
+        });
+        final Classification def = meta.nameOf(elementName);
+        return def == null ? null : findClassificationAlias(def);
     }
 
+    // -----------------------------------------------------
+    //                                                code()
+    //                                                ------
     /**
-     * Get Classification code.
-     * @param def classification
-     * @return classification code. (non classification is return null)
+     * Get classification code.
+     * @param def The instance of classification to get code. (NotNull)
+     * @return The code of classification. (NullAllowed: if not classification)
      */
     public String code(Object def) {
-        if (def instanceof Classification) {
-            return ((Classification) def).code();
-        }
-        return null;
+        return def instanceof Classification ? ((Classification) def).code() : null;
     }
 
     /**
-     * Get Classification code.
-     * @param type classification-name
-     * @param code classification element name
-     * @return classification code
+     * Get classification code.
+     * @param classificationName The name of classification. (NotNull)
+     * @param elementName The name of classification element. (NotNull)
+     * @return The found code of classification. (NullAllowed: if not found)
      */
-    public String code(String type, String code) {
-        try {
-            final ClassificationMeta meta = findClassificationMeta((String) type, new Supplier<Object>() {
-                public Object get() {
-                    return "${#cdef.code('" + type + "', '" + code + "')}";
-                }
-            });
-            Classification def = meta.nameOf(code);
-            return def == null ? null : def.code();
-        } catch (Exception e) {
-            throw new TemplateProcessingException(e.getMessage(), e);
-        }
+    public String code(String classificationName, String elementName) {
+        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
+            return "${#cdef.code('" + classificationName + "', '" + elementName + "')}";
+        });
+        final Classification def = meta.nameOf(elementName);
+        return def == null ? null : def.code();
     }
 
+    // -----------------------------------------------------
+    //                                               ...Of()
+    //                                               -------
     /**
      * Get Classification by code.
      * @param type classification-name
@@ -194,17 +185,13 @@ public class ExpressionCDefProcessor {
     }
 
     protected Locale getUserLocale() {
-        if (getProcessingContext() != null) {
-            return getProcessingContext().getContext().getLocale();
-        }
-        return Locale.getDefault();
+        final IProcessingContext context = getProcessingContext();
+        return context != null ? context.getContext().getLocale() : Locale.getDefault();
     }
 
     protected String getRequestTemplatePath() {
-        if (getProcessingContext() instanceof Arguments) {
-            return ((Arguments) getProcessingContext()).getTemplateName();
-        }
-        return null;
+        final IProcessingContext context = getProcessingContext();
+        return context instanceof Arguments ? ((Arguments) context).getTemplateName() : null;
     }
 
     // ===================================================================================
@@ -215,12 +202,9 @@ public class ExpressionCDefProcessor {
     }
 
     protected String findClassificationAlias(Classification cls) {
-        return determineClassificationAliasKey().map(new OptionalThingFunction<String, String>() {
-            @Override
-            public String apply(String key) {
-                return (String) cls.subItemMap().get(key);
-            }
-        }).orElse(cls.alias()); // not lambda for Jetty6
+        return determineClassificationAliasKey().map(key -> {
+            return (String) cls.subItemMap().get(key);
+        }).orElse(cls.alias());
     }
 
     protected OptionalThing<String> determineClassificationAliasKey() {

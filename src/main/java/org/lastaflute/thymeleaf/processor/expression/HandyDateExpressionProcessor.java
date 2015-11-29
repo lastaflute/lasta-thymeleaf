@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor;
+package org.lastaflute.thymeleaf.processor.expression;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,7 +41,7 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  *
  * @author schatten
  */
-public class ExpressionHandyDateProcessor {
+public class HandyDateExpressionProcessor {
 
     // ===================================================================================
     //                                                                          Definition

@@ -21,6 +21,13 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.ForEachAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
+import org.lastaflute.thymeleaf.processor.expression.ClsExpressionProcessor;
+import org.lastaflute.thymeleaf.processor.expression.HandyDateExpressionProcessor;
 import org.thymeleaf.Configuration;
 import org.thymeleaf.context.IProcessingContext;
 import org.thymeleaf.dialect.AbstractXHTMLEnabledDialect;
@@ -82,6 +89,7 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
 
     protected Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
+        processors.add(createErrorsAttrProcessor());
         processors.add(createForEachAttrProcessor());
         processors.add(createOptionClsAttrProcessor());
         processors.add(createPropertyAttrProcessor());
@@ -89,11 +97,15 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
         return processors;
     }
 
-    protected static ForEachAttrProcessor createForEachAttrProcessor() {
+    protected ErrorsAttrProcessor createErrorsAttrProcessor() {
+        return new ErrorsAttrProcessor();
+    }
+
+    protected ForEachAttrProcessor createForEachAttrProcessor() {
         return new ForEachAttrProcessor();
     }
 
-    protected static OptionClsAttrProcessor createOptionClsAttrProcessor() {
+    protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
         return new OptionClsAttrProcessor();
     }
 
@@ -101,7 +113,7 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
         return new PropertyAttrProcessor();
     }
 
-    protected static TokenAttrProcessor createTokenAttrProcessor() {
+    protected TokenAttrProcessor createTokenAttrProcessor() {
         return new TokenAttrProcessor();
     }
 
@@ -111,8 +123,8 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     @Override
     public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
         Map<String, Object> map = new HashMap<>();
-        map.put("handydate", new ExpressionHandyDateProcessor());
-        map.put("cdef", new ExpressionCDefProcessor(processingContext));
+        map.put("handydate", new HandyDateExpressionProcessor());
+        map.put("cdef", new ClsExpressionProcessor(processingContext));
         return map;
     }
 
