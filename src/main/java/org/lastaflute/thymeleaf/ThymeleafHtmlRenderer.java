@@ -18,7 +18,7 @@ package org.lastaflute.thymeleaf;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.dbflute.util.Srl;
-import org.lastaflute.core.util.ContainerUtil;
 import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyConflictingWithRegisteredDataException;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyUsingReservedWordException;
@@ -45,7 +44,6 @@ import org.lastaflute.web.ruts.message.ActionMessages;
 import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
-import org.lastaflute.web.token.DoubleSubmitManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
@@ -67,13 +65,12 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
 
     // avoid conflicting with form property as best one can
     public static final String VARIABLE_ERRORS = "errors";
-    public static final String VARIABLE_TOKEN = "token";
     public static final String VARIABLE_VERSION_QUERY = "vq";
 
     protected static final Set<String> reservedWordSet;
 
     static {
-        final Set<String> makingSet = new HashSet<String>();
+        final Set<String> makingSet = new LinkedHashSet<String>();
         makingSet.add(VARIABLE_ERRORS);
         makingSet.add(VARIABLE_VERSION_QUERY);
         reservedWordSet = Collections.unmodifiableSet(makingSet);
@@ -129,7 +126,6 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                         -------------
     protected void exportErrorsToContext(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
         setupVariableErrors(requestManager, context, runtime);
-        setupVariableToken(requestManager, context, runtime);
         setupVariableVersionQuery(requestManager, context, runtime);
     }
 
@@ -159,18 +155,6 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
 
     protected ActionMessages createEmptyMessages() {
         return new ActionMessages();
-    }
-
-    protected void setupVariableToken(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
-        final String varKey = VARIABLE_TOKEN;
-        checkRegisteredDataUsingReservedWord(runtime, context, varKey);
-        // #pending can get from request manager by lastaflute next version
-        final DoubleSubmitManager doubleSubmitManager = ContainerUtil.getComponent(DoubleSubmitManager.class);
-        doubleSubmitManager.getSessionTokenMap().ifPresent(tokenMap -> {
-            tokenMap.get(runtime.getActionType()).ifPresent(token -> {
-                context.setVariable(varKey, token);
-            });
-        });
     }
 
     protected void setupVariableVersionQuery(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
@@ -308,7 +292,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     protected void throwThymeleafFormPropertyConflictingWithRegisteredDataException(ActionRuntime runtime,
             VariablesMap<String, Object> variableMap, String conflictedName) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-        br.addNotice("Conflictingbetween form property and registered data.");
+        br.addNotice("Conflicting between form property and registered data.");
         br.addItem("Advice");
         br.addElement("Use unique names for form property or registered data.");
         br.addElement("For example:");
@@ -328,7 +312,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         br.addElement(runtime);
         br.addItem("Variable Map");
         br.addElement(variableMap);
-        br.addItem("Conflicted Name");
+        br.addItem("Conflicting Name");
         br.addElement(conflictedName);
         final String msg = br.buildExceptionMessage();
         throw new ThymeleafFormPropertyConflictingWithRegisteredDataException(msg);
