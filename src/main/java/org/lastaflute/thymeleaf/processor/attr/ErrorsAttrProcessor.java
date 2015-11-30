@@ -43,14 +43,14 @@ public class ErrorsAttrProcessor extends AbstractAttributeModifierAttrProcessor 
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
+    public static final String ATTRIBUTE_NAME = "errors";
     public static final String DEFAULT_STYLE = "errors";
-    public static final String PROPERTY_ATTRIBUTE_NAME = "errors";
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
     public ErrorsAttrProcessor() {
-        super(PROPERTY_ATTRIBUTE_NAME);
+        super(ATTRIBUTE_NAME);
     }
 
     // ===================================================================================

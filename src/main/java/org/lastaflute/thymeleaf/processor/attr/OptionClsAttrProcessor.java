@@ -75,15 +75,15 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    protected static final String OPTION_CLS_ATTRIBUTE_NAME = "optionCls";
-    private static final String OPTION_CLS_ELEMENT_TARGET = "option";
+    public static final String ATTRIBUTE_NAME = "optionCls";
+    private static final String ELEMENT_TARGET = "option";
     private static final String DEFAULT_ITERATION_VALUE = "cdef";
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
     public OptionClsAttrProcessor() {
-        super(new AttributeNameProcessorMatcher(OPTION_CLS_ATTRIBUTE_NAME, OPTION_CLS_ELEMENT_TARGET));
+        super(new AttributeNameProcessorMatcher(ATTRIBUTE_NAME, ELEMENT_TARGET));
     }
 
     // ===================================================================================

@@ -70,8 +70,8 @@ public class ForEachAttrProcessor extends AbstractIterationAttrProcessor {
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
+    public static final String ATTRIBUTE_NAME = "foreach";
     public static final int ATTR_PRECEDENCE = 200;
-    public static final String ATTR_NAME = "foreach";
 
     protected static final String ITERATION_SPEC_VAR_SUFFIX = "Spec";
     public static final String FORM_PROPERTY_PATH_VER = "foreach_form_property_path";
@@ -80,7 +80,7 @@ public class ForEachAttrProcessor extends AbstractIterationAttrProcessor {
     //                                                                         Constructor
     //                                                                         ===========
     public ForEachAttrProcessor() {
-        super(ATTR_NAME);
+        super(ATTRIBUTE_NAME);
     }
 
     // ===================================================================================

@@ -47,13 +47,13 @@ public class TokenAttrProcessor extends AbstractAttributeModifierAttrProcessor {
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    protected static final String PROPERTY_ATTRIBUTE_NAME = "token";
+    public static final String ATTRIBUTE_NAME = "token";
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
     public TokenAttrProcessor() {
-        super(PROPERTY_ATTRIBUTE_NAME);
+        super(ATTRIBUTE_NAME);
     }
 
     // ===================================================================================

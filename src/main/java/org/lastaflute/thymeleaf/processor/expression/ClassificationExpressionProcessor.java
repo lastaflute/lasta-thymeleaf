@@ -36,7 +36,7 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  * <pre>
  * Usage:
  *     &lt;select&gt;
- *       &lt;option th:each="status : ${#cls.listAll('MemberStatus')}" th:value="${status.code()}" th:text="${status.alias()}"&gt;&lt;/option&gt;
+ *       &lt;option th:each="cdef : ${#cls.listAll('MemberStatus')}" th:value="${cdef.code()}" th:text="${cdef.alias()}"&gt;&lt;/option&gt;
  *     &lt;/select&gt;
  *
  *   The result of processing this example will be as expected.
