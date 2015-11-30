@@ -135,22 +135,23 @@ public class ClassificationExpressionProcessor {
         return findClassificationAlias((Classification) cls);
     }
 
-    /**
-     * Get classification alias.
-     * @param classificationName The name of classification. (NotNull)
-     * @param elementName The name of classification element. (NotNull)
-     * @return classification alias (NotNull: if not found, throws exception)
-     */
-    public String alias(String classificationName, String elementName) {
-        assertArgumentNotNull("classificationName", classificationName);
-        assertArgumentNotNull("elementName", elementName);
-        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
-            return "alias('" + classificationName + "', '" + elementName + "')";
-        });
-        final Classification cls = meta.nameOf(elementName);
-        assertClassificationByNameExists(classificationName, elementName, cls);
-        return findClassificationAlias(cls);
-    }
+    // should be by-code, and may be unneeded by native property in form
+    ///**
+    // * Get classification alias.
+    // * @param classificationName The name of classification. (NotNull)
+    // * @param elementName The name of classification element. (NotNull)
+    // * @return classification alias (NotNull: if not found, throws exception)
+    // */
+    //public String alias(String classificationName, String elementName) {
+    //    assertArgumentNotNull("classificationName", classificationName);
+    //    assertArgumentNotNull("elementName", elementName);
+    //    final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
+    //        return "alias('" + classificationName + "', '" + elementName + "')";
+    //    });
+    //    final Classification cls = meta.nameOf(elementName);
+    //    assertClassificationByNameExists(classificationName, elementName, cls);
+    //    return findClassificationAlias(cls);
+    //}
 
     // -----------------------------------------------------
     //                                                code()
