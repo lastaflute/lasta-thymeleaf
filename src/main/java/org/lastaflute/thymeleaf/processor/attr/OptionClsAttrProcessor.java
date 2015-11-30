@@ -153,9 +153,10 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
             // Parse the attribute value as a Thymeleaf Standard Expression
             final IStandardExpression expression = parser.parseExpression(configuration, arguments, attributeValue);
 
-            String classificationName = expression.execute(configuration, arguments).toString();
-            return new IterationSpec(DEFAULT_ITERATION_VALUE,
-                    DEFAULT_ITERATION_VALUE + AbstractIterationAttrProcessor.DEFAULT_STATUS_VAR_SUFFIX, classificationName);
+            final String classificationName = expression.execute(configuration, arguments).toString();
+            final String iterVarName = DEFAULT_ITERATION_VALUE;
+            final String statusVarName = iterVarName + AbstractIterationAttrProcessor.DEFAULT_STATUS_VAR_SUFFIX;
+            return new IterationSpec(iterVarName, statusVarName, classificationName);
         }
 
         String classification = attributeValue.substring(separateIndex + 1).trim();
