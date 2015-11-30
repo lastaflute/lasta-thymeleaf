@@ -50,13 +50,12 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     //                                                                           Attribute
     //                                                                           =========
     protected final Configuration configuration;
-    private final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
+    protected final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
     public LastaThymeleafDialect(Configuration configuration) {
-        super();
         this.configuration = configuration;
     }
 
@@ -65,25 +64,16 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     //                                                                          ==========
     /**
      * Get prefix of attribute name.
-     * @see org.thymeleaf.dialect.IDialect#getPrefix()
      */
     @Override
     public String getPrefix() {
         return LASTA_TYMELEAF_DIALECT_PREFIX;
     }
 
-    /**
-     * @see org.thymeleaf.dialect.AbstractDialect#getProcessors()
-     */
     @Override
     public Set<IProcessor> getProcessors() {
         final Set<IProcessor> processors = createLastaProcessorsSet();
-        final Set<IProcessor> dialectAdditionalProcessors = getAdditionalProcessors();
-
-        if (!dialectAdditionalProcessors.isEmpty()) {
-            processors.addAll(dialectAdditionalProcessors);
-        }
-
+        processors.addAll(getAdditionalProcessors());
         return new LinkedHashSet<IProcessor>(processors);
     }
 
@@ -117,13 +107,10 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
         return new TokenAttrProcessor();
     }
 
-    /**
-     * @see org.thymeleaf.dialect.IExpressionEnhancingDialect#getAdditionalExpressionObjects(org.thymeleaf.context.IProcessingContext)
-     */
     @Override
     public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("handydate", new HandyDateExpressionProcessor());
+        final Map<String, Object> map = new HashMap<>();
+        map.put("handy", new HandyDateExpressionProcessor());
         map.put("cdef", new ClsExpressionProcessor(processingContext));
         return map;
     }
@@ -132,7 +119,7 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     //                                                                            Accessor
     //                                                                            ========
     public Set<IProcessor> getAdditionalProcessors() {
-        return Collections.unmodifiableSet(this.additionalProcessors);
+        return Collections.unmodifiableSet(additionalProcessors);
     }
 
     public void addAdditionalProcessor(IProcessor processor) {
