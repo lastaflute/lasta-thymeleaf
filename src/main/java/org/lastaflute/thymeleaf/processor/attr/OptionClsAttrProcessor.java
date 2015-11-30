@@ -42,7 +42,7 @@ import org.thymeleaf.util.Validate;
  * This means is :
  *   &lt;select name="status"&gt;
  *     &lt;option&gt;&lt;/option&gt;
- *     &lt;option <b>th:each="opdef : ${#cdef.values('MemberStatus')}" th:value="${#cdef.code(opdef)}" th:text="${#cdef.alias(opdef)}"</b> th:selected="${opdef} == ${status}"&gt;&lt;/option&gt;
+ *     &lt;option <b>th:each="cdef : ${#cls.listAll('MemberStatus')}" th:value="${#cls.code(cdef)}" th:text="${#cls.alias(status)}"</b> th:selected="${cdef} == ${status}"&gt;&lt;/option&gt;
  *   &lt;/select&gt;
  *
  * The result of processing this example will be as expected.
@@ -56,7 +56,7 @@ import org.thymeleaf.util.Validate;
  * 2.If Custom text use.("prod" is iteration variable)
  *   &lt;select la:proparty="status"&gt;
  *     &lt;option&gt;&lt;/option&gt;
- *     &lt;option <b>la:optionCls="prod : 'MemberStatus'"</b> th:text="${#cdef.code(prod)} + ' : ' + ${#cdef.alias(prod)}"&gt;&lt;/option&gt;
+ *     &lt;option <b>la:optionCls="prod : 'MemberStatus'"</b> th:text="${#cls.code(prod)} + ' : ' + ${#cls.alias(prod)}"&gt;&lt;/option&gt;
  *   &lt;/select&gt;
  *
  * The result of processing this example will be as expected.
@@ -68,6 +68,7 @@ import org.thymeleaf.util.Validate;
  *   &lt;/select&gt;
  * </pre>
  * @author schatten
+ * @author jflute
  */
 public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcessor {
 
@@ -76,7 +77,7 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
     //                                                                          ==========
     protected static final String OPTION_CLS_ATTRIBUTE_NAME = "optionCls";
     private static final String OPTION_CLS_ELEMENT_TARGET = "option";
-    private static final String DEFAULT_ITERATION_VALUE = "opdef";
+    private static final String DEFAULT_ITERATION_VALUE = "cdef";
 
     // ===================================================================================
     //                                                                         Constructor
@@ -88,40 +89,30 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
     // ===================================================================================
     //                                                                          Implements
     //                                                                          ==========
-    /**
-     * {@inheritDoc}
-     * @see org.thymeleaf.processor.AbstractProcessor#getPrecedence()
-     */
     @Override
     public int getPrecedence() {
         return 200;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModifiedAttributeValues(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
-     */
     @Override
     protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-
-        IterationSpec spec = getIterationSpec(arguments, element, attributeName);
-
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("th:each", String.format("%s, %s : ${#cdef.values('%s')}", spec.getIterVarName(), spec.getStatusVarName(),
+        final IterationSpec spec = getIterationSpec(arguments, element, attributeName);
+        final Map<String, String> values = new HashMap<String, String>();
+        values.put("th:each", String.format("%s, %s : ${#cls.listAll('%s')}", spec.getIterVarName(), spec.getStatusVarName(),
                 spec.getClassificationName()));
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "value")) {
-            map.put("th:value", String.format("${#cdef.code(%s)}", spec.getIterVarName()));
+            values.put("th:value", String.format("${#cls.code(%s)}", spec.getIterVarName()));
         }
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "text")) {
-            map.put("th:text", String.format("${#cdef.alias(%s)}", spec.getIterVarName()));
+            values.put("th:text", String.format("${#cls.alias(%s)}", spec.getIterVarName()));
         }
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "selected")) {
             String selectPropertyNamme = getParentSelectPropertyName(element);
             if (selectPropertyNamme != null) {
-                map.put("th:selected", String.format("${%s} == ${%s}", spec.getIterVarName(), selectPropertyNamme));
+                values.put("th:selected", String.format("${%s} == ${%s}", spec.getIterVarName(), selectPropertyNamme));
             }
         }
-        return map;
+        return values;
     }
 
     protected String getParentSelectPropertyName(Element element) {
@@ -134,28 +125,16 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
         return getParentSelectPropertyName((Element) element.getParent());
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModificationType(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
-     */
     @Override
     protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
         return ModificationType.SUBSTITUTION;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#removeAttributeIfEmpty(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
-     */
     @Override
     protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#recomputeProcessorsAfterExecution(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
-     */
     @Override
     protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
         return true;
@@ -191,9 +170,7 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
         }
         // Parse the attribute value as a Thymeleaf Standard Expression
         final IStandardExpression expression = parser.parseExpression(configuration, arguments, classification);
-
-        String classificationName = expression.execute(configuration, arguments).toString();
-
+        final String classificationName = expression.execute(configuration, arguments).toString();
         return new IterationSpec(iterVarName, statusVarName, classificationName);
     }
 

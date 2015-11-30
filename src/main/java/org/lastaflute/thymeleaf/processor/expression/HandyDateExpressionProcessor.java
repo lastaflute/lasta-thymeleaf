@@ -29,9 +29,9 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  * Inner work uses org.dbflute.helper.HandyDate.
  * <pre>
  * Usage:
- *     &lt;span th:text="${#handydate.format(member.birthdate)}"&gt;20XX-XX-XX&lt;/span&gt;
- *     &lt;span th:text="${#handydate.format(member.birthdate,'yyyy/MM/dd')}"&gt;20XX-XX-XX&lt;/span&gt;
- *     &lt;span th:text="${#handydate.create(member.birthdate).addYear(10).toDisp('yyyy-MM-dd')}"&gt;20XX-XX-XX&lt;/span&gt;
+ *     &lt;span th:text="${#handy.format(member.birthdate)}"&gt;20XX-XX-XX&lt;/span&gt;
+ *     &lt;span th:text="${#handy.format(member.birthdate,'yyyy/MM/dd')}"&gt;20XX-XX-XX&lt;/span&gt;
+ *     &lt;span th:text="${#handy.date(member.birthdate).addYear(10).toDisp('yyyy-MM-dd')}"&gt;20XX-XX-XX&lt;/span&gt;
  *
  *   The result of processing this example will be as expected.
  *     &lt;span&gt;2006-09-26&lt;/span&gt;
@@ -40,6 +40,7 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  * </pre>
  *
  * @author schatten
+ * @author jflute
  */
 public class HandyDateExpressionProcessor {
 
@@ -53,14 +54,14 @@ public class HandyDateExpressionProcessor {
     public static final String DEFAULT_DATE_FORMAT_PATTERN = "yyyy-MM-dd";
 
     // ===================================================================================
-    //                                                                          Expression
+    //                                                                          Handy Date
     //                                                                          ==========
     /**
      * Create HandyDate object.
      * @param expression Date expression.(LocalDate, LocalDateTime, Date String)
      * @return HandyDate
      */
-    public HandyDate create(Object expression) {
+    public HandyDate date(Object expression) {
         if (expression instanceof LocalDate) {
             return create((LocalDate) expression);
         }
@@ -83,7 +84,7 @@ public class HandyDateExpressionProcessor {
      * @param arg2 TimeZone or Date String parse pattern.
      * @return HandyDate
      */
-    public HandyDate create(Object expression, Object arg2) {
+    public HandyDate date(Object expression, Object arg2) {
         if (arg2 instanceof TimeZone) {
             if (expression instanceof LocalDate) {
                 return create((LocalDate) expression, (TimeZone) arg2);
@@ -116,7 +117,7 @@ public class HandyDateExpressionProcessor {
      * @param locale date locale (Locale)
      * @return HandyDate
      */
-    public HandyDate create(Object expression, Object pattern, Object locale) {
+    public HandyDate date(Object expression, Object pattern, Object locale) {
         if (!(expression instanceof String)) {
             String msg = "First argument as three arguments should be String(expression).";
             throw new TemplateProcessingException(msg);
@@ -140,7 +141,7 @@ public class HandyDateExpressionProcessor {
      * @param locale dat locale (Locale)
      * @return HandyDate
      */
-    public HandyDate create(Object expression, Object timeZone, Object pattern, Object locale) {
+    public HandyDate date(Object expression, Object timeZone, Object pattern, Object locale) {
         if (!(expression instanceof String)) {
             String msg = "First argument as four arguments should be String(expression).";
             throw new TemplateProcessingException(msg);
@@ -160,14 +161,21 @@ public class HandyDateExpressionProcessor {
         return create((String) expression, (TimeZone) timeZone, (String) pattern, (Locale) locale);
     }
 
+    // ===================================================================================
+    //                                                                              Format
+    //                                                                              ======
     /**
      * Get formatted date string.
      * Using pattern of default.
      * @param expression Date expression.
-     * @return formatted date string.(Return null if expression is null.)
+     * @return formatted date string. (NullAllowed: if expression is null.)
      */
     public String format(Object expression) {
-        return format(expression, DEFAULT_DATE_FORMAT_PATTERN);
+        return format(expression, getDateFormatPattern());
+    }
+
+    protected String getDateFormatPattern() {
+        return DEFAULT_DATE_FORMAT_PATTERN;
     }
 
     /**
@@ -203,112 +211,43 @@ public class HandyDateExpressionProcessor {
     // ===================================================================================
     //                                                                    Delegate Utility
     //                                                                    ================
-    /**
-     * Create HandyDate from LocalDate.
-     * @param localDate
-     * @return HandyDate
-     * @see HandyDate#HandyDate(LocalDate)
-     */
-    public static HandyDate create(LocalDate localDate) {
+    protected static HandyDate create(LocalDate localDate) {
         return new HandyDate(localDate);
     }
 
-    /**
-     * Create HandyDate from LocalDate.
-     * @param localDate
-     * @param timeZone
-     * @return HandyDate
-     * @see HandyDate#HandyDate(LocalDate, TimeZone)
-     */
-    public static HandyDate create(LocalDate localDate, TimeZone timeZone) {
+    protected static HandyDate create(LocalDate localDate, TimeZone timeZone) {
         return new HandyDate(localDate, timeZone);
     }
 
-    /**
-     * Create HandyDate from LocalDateTime.
-     * @param localDateTime
-     * @return HandyDate
-     * @see HandyDate#HandyDate(LocalDateTime)
-     */
-    public static HandyDate create(LocalDateTime localDateTime) {
+    protected static HandyDate create(LocalDateTime localDateTime) {
         return new HandyDate(localDateTime);
     }
 
-    /**
-     * Create HandyDate from LocalDateTime.
-     * @param localDateTime
-     * @param timeZone
-     * @return HandyDate
-     * @see HandyDate#HandyDate(LocalDateTime, TimeZone)
-     */
-    public static HandyDate create(LocalDateTime localDateTime, TimeZone timeZone) {
+    protected static HandyDate create(LocalDateTime localDateTime, TimeZone timeZone) {
         return new HandyDate(localDateTime, timeZone);
     }
 
-    /**
-     * Create HandyDate from Date.
-     * @param date
-     * @return HandyDate
-     * @see HandyDate#HandyDate(Date)
-     */
-    public static HandyDate create(Date date) {
+    protected static HandyDate create(Date date) {
         return new HandyDate(date);
     }
 
-    /**
-     * Create HandyDate from String.
-     * @param exp
-     * @return HandyDate
-     * @see HandyDate#HandyDate(String)
-     */
-    public static HandyDate create(String exp) {
+    protected static HandyDate create(String exp) {
         return new HandyDate(exp);
     }
 
-    /**
-     * Create HandyDate from string with TimeZone.
-     * @param exp
-     * @param timeZone
-     * @return HandyDate
-     * @see HandyDate#HandyDate(String, TimeZone)
-     */
-    public static HandyDate create(String exp, TimeZone timeZone) {
+    protected static HandyDate create(String exp, TimeZone timeZone) {
         return new HandyDate(exp, timeZone);
     }
 
-    /**
-     * Create HandyDate from date string with parse pattern.
-     * @param exp
-     * @param pattern
-     * @return HandyDate
-     * @see HandyDate#HandyDate(String, String)
-     */
-    public static HandyDate create(String exp, String pattern) {
+    protected static HandyDate create(String exp, String pattern) {
         return new HandyDate(exp, pattern);
     }
 
-    /**
-     * Create HandyDate from date string with parse pattern and locale.
-     * @param exp
-     * @param pattern
-     * @param locale
-     * @return HandyDate
-     * @see HandyDate#HandyDate(String, String, Locale)
-     */
-    public static HandyDate create(String exp, String pattern, Locale locale) {
+    protected static HandyDate create(String exp, String pattern, Locale locale) {
         return new HandyDate(exp, pattern, locale);
     }
 
-    /**
-     * Create HandyDate from date string with TimeZone, parse pattern and locale.
-     * @param exp
-     * @param timeZone
-     * @param pattern
-     * @param locale
-     * @return HandyDate
-     * @see HandyDate#HandyDate(String, TimeZone, String, Locale)
-     */
-    public static HandyDate create(String exp, TimeZone timeZone, String pattern, Locale locale) {
+    protected static HandyDate create(String exp, TimeZone timeZone, String pattern, Locale locale) {
         return new HandyDate(exp, timeZone, pattern, locale);
     }
 }

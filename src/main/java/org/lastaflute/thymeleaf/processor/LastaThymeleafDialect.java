@@ -26,7 +26,7 @@ import org.lastaflute.thymeleaf.processor.attr.ForEachAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
-import org.lastaflute.thymeleaf.processor.expression.ClsExpressionProcessor;
+import org.lastaflute.thymeleaf.processor.expression.ClassificationExpressionProcessor;
 import org.lastaflute.thymeleaf.processor.expression.HandyDateExpressionProcessor;
 import org.thymeleaf.Configuration;
 import org.thymeleaf.context.IProcessingContext;
@@ -111,7 +111,7 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
         final Map<String, Object> map = new HashMap<>();
         map.put("handy", new HandyDateExpressionProcessor());
-        map.put("cdef", new ClsExpressionProcessor(processingContext));
+        map.put("cls", new ClassificationExpressionProcessor(processingContext));
         return map;
     }
 

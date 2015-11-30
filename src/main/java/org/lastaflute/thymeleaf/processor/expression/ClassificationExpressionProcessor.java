@@ -36,7 +36,7 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  * <pre>
  * Usage:
  *     &lt;select&gt;
- *       &lt;option th:each="def : ${#cdef.values('MemberStatus')}" th:value="${#cdef.code(def)}" th:text="${#cdef.alias(def)}"&gt;&lt;/option&gt;
+ *       &lt;option th:each="status : ${#cls.listAll('MemberStatus')}" th:value="${status.code()}" th:text="${status.alias()}"&gt;&lt;/option&gt;
  *     &lt;/select&gt;
  *
  *   The result of processing this example will be as expected.
@@ -47,8 +47,9 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  *     &lt;/select&gt;
  * </pre>
  * @author schatten
+ * @author jflute
  */
-public class ClsExpressionProcessor {
+public class ClassificationExpressionProcessor {
 
     // ===================================================================================
     //                                                                           Attribute
@@ -58,7 +59,7 @@ public class ClsExpressionProcessor {
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ClsExpressionProcessor(IProcessingContext processingContext) {
+    public ClassificationExpressionProcessor(IProcessingContext processingContext) {
         this.processingContext = processingContext;
     }
 
@@ -66,18 +67,18 @@ public class ClsExpressionProcessor {
     //                                                                          Expression
     //                                                                          ==========
     // -----------------------------------------------------
-    //                                              values()
-    //                                              --------
+    //                                             listAll()
+    //                                             ---------
     /**
-     * Get classification values.
+     * Get list of all classification.
      * @param classificationName The name of classification (NotNull)
-     * @return The list of the classification. (NotNull)
+     * @return The list of all classification. (NotNull)
      */
-    public List<Classification> values(String classificationName) {
-        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
-            return "${#cdef.values('" + classificationName + "')}";
-        });
-        return meta.listAll();
+    public List<Classification> listAll(String classificationName) {
+        assertArgumentNotNull("classificationName", classificationName);
+        return findClassificationMeta((String) classificationName, () -> {
+            return "listAll('" + classificationName + "')";
+        }).listAll();
     }
 
     // -----------------------------------------------------
@@ -85,29 +86,30 @@ public class ClsExpressionProcessor {
     //                                               -------
     /**
      * Get Classification alias.
-     * @param def The instance of classification to get code. (NotNull)
-     * @return classification alias. (non classification is return null)
+     * @param cls The instance of classification to get code. (NotNull)
+     * @return The alias of classification. (NotNull: if not classification, throws exception)
      */
-    public String alias(Object def) {
-        if (def instanceof Classification) {
-            return findClassificationAlias((Classification) def);
-        }
-        // TODO jflute exception? (2015/11/29)
-        return null;
+    public String alias(Object cls) {
+        assertArgumentNotNull("cls", cls);
+        assertCanBeClassification(cls);
+        return findClassificationAlias((Classification) cls);
     }
 
     /**
      * Get classification alias.
      * @param classificationName The name of classification. (NotNull)
      * @param elementName The name of classification element. (NotNull)
-     * @return classification alias (NullAllowed: if not found)
+     * @return classification alias (NotNull: if not found, throws exception)
      */
     public String alias(String classificationName, String elementName) {
+        assertArgumentNotNull("classificationName", classificationName);
+        assertArgumentNotNull("elementName", elementName);
         final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
-            return "${#cdef.alias('" + classificationName + "', '" + elementName + "')}";
+            return "alias('" + classificationName + "', '" + elementName + "')";
         });
-        final Classification def = meta.nameOf(elementName);
-        return def == null ? null : findClassificationAlias(def);
+        final Classification cls = meta.nameOf(elementName);
+        assertClassificationByNameExists(classificationName, elementName, cls);
+        return findClassificationAlias(cls);
     }
 
     // -----------------------------------------------------
@@ -115,66 +117,59 @@ public class ClsExpressionProcessor {
     //                                                ------
     /**
      * Get classification code.
-     * @param def The instance of classification to get code. (NotNull)
-     * @return The code of classification. (NullAllowed: if not classification)
+     * @param cls The instance of classification to get code. (NotNull)
+     * @return The code of classification. (NotNull: if not classification, throws exception)
      */
-    public String code(Object def) {
-        return def instanceof Classification ? ((Classification) def).code() : null;
+    public String code(Object cls) {
+        assertArgumentNotNull("cls", cls);
+        assertCanBeClassification(cls);
+        return ((Classification) cls).code();
     }
 
     /**
      * Get classification code.
      * @param classificationName The name of classification. (NotNull)
      * @param elementName The name of classification element. (NotNull)
-     * @return The found code of classification. (NullAllowed: if not found)
+     * @return The found code of classification. (NotNull: if not found, throws exception)
      */
     public String code(String classificationName, String elementName) {
+        assertArgumentNotNull("classificationName", classificationName);
+        assertArgumentNotNull("elementName", elementName);
         final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
-            return "${#cdef.code('" + classificationName + "', '" + elementName + "')}";
+            return "code('" + classificationName + "', '" + elementName + "')";
         });
-        final Classification def = meta.nameOf(elementName);
-        return def == null ? null : def.code();
+        final Classification cls = meta.nameOf(elementName);
+        assertClassificationByNameExists(classificationName, elementName, cls);
+        return cls.code();
     }
 
     // -----------------------------------------------------
     //                                               ...Of()
     //                                               -------
     /**
-     * Get Classification by code.
-     * @param type classification-name
-     * @param code classification element code
-     * @return Classification
+     * Get classification by code.
+     * @param classificationName The name of classification. (NotNull)
+     * @param code The code of classification to find. (NotNull)
+     * @return The found instance of classification for the code. (NotNull: if not found, throws exception)
      */
-    public Classification codeOf(String type, String code) {
-        try {
-            final ClassificationMeta meta = findClassificationMeta((String) type, new Supplier<Object>() {
-                public Object get() {
-                    return "${#cdef.codeOf('" + type + "', '" + code + "')}";
-                }
-            });
-            return meta.codeOf(code);
-        } catch (Exception e) {
-            throw new TemplateProcessingException(e.getMessage(), e);
-        }
+    public Classification codeOf(String classificationName, String code) {
+        assertArgumentNotNull("elementName", classificationName);
+        assertArgumentNotNull("code", code);
+        return findClassificationMeta(classificationName, () -> {
+            return "codeOf('" + classificationName + "', '" + code + "')";
+        }).codeOf(code);
     }
 
     /**
-     * Get Classification by name.
-     * @param type classification-name
-     * @param name classification element name
-     * @return Classification
+     * Get classification by name.
+     * @param classificationName The name of classification. (NotNull)
+     * @param name The name of classification to find. (NotNull)
+     * @return The found instance of classification for the code. (NotNull: if not found, throws exception)
      */
-    public Classification nameOf(String type, String name) {
-        try {
-            final ClassificationMeta meta = findClassificationMeta((String) type, new Supplier<Object>() {
-                public Object get() {
-                    return "${#cdef.nameOf('" + type + "', '" + name + "')}";
-                }
-            });
-            return meta.nameOf(name);
-        } catch (Exception e) {
-            throw new TemplateProcessingException(e.getMessage(), e);
-        }
+    public Classification nameOf(String classificationName, String name) {
+        return findClassificationMeta((String) classificationName, () -> {
+            return "nameOf('" + classificationName + "', '" + name + "')";
+        }).nameOf(name);
     }
 
     // ===================================================================================
@@ -247,5 +242,50 @@ public class ClsExpressionProcessor {
 
     protected <COMPONENT> COMPONENT getComponent(Class<COMPONENT> type) {
         return ContainerUtil.getComponent(type);
+    }
+
+    // ===================================================================================
+    //                                                                       Assert Helper
+    //                                                                       =============
+    protected void assertCanBeClassification(Object cls) {
+        if (!(cls instanceof Classification)) {
+            throwNonClassificationObjectSpecifiedException(cls);
+        }
+    }
+
+    protected void throwNonClassificationObjectSpecifiedException(Object cls) {
+        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+        br.addNotice("Non classification object specified.");
+        br.addItem("Specified Object");
+        br.addElement(cls != null ? cls.getClass() : null);
+        br.addElement(cls);
+        final String msg = br.buildExceptionMessage();
+        throw new TemplateProcessingException(msg);
+    }
+
+    protected void assertClassificationByNameExists(String classificationName, String elementName, Classification cls) {
+        if (cls == null) {
+            throwClassificationByNameNotFoundException(classificationName, elementName);
+        }
+    }
+
+    protected void throwClassificationByNameNotFoundException(String classificationName, String elementName) {
+        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+        br.addNotice("Non found the classification by the name.");
+        br.addItem("Classification Name");
+        br.addElement(classificationName);
+        br.addItem("Specified Name");
+        br.addElement(elementName);
+        final String msg = br.buildExceptionMessage();
+        throw new TemplateProcessingException(msg);
+    }
+
+    protected void assertArgumentNotNull(String variableName, Object value) {
+        if (variableName == null) {
+            throw new IllegalArgumentException("The argument 'variableName' should not be null.");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("The argument '" + variableName + "' should not be null.");
+        }
     }
 }
