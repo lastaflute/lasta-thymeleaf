@@ -97,19 +97,21 @@ public class OptionClsAttrProcessor extends AbstractAttributeModifierAttrProcess
     @Override
     protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
         final IterationSpec spec = getIterationSpec(arguments, element, attributeName);
+        final String iterVarName = spec.getIterVarName();
         final Map<String, String> values = new HashMap<String, String>();
-        values.put("th:each", String.format("%s, %s : ${#cls.listAll('%s')}", spec.getIterVarName(), spec.getStatusVarName(),
-                spec.getClassificationName()));
+        final String statusVarName = spec.getStatusVarName();
+        final Object classificationName = spec.getClassificationName();
+        values.put("th:each", String.format("%s, %s : ${#cls.list('%s')}", iterVarName, statusVarName, classificationName));
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "value")) {
-            values.put("th:value", String.format("${#cls.code(%s)}", spec.getIterVarName()));
+            values.put("th:value", String.format("${#cls.code(%s)}", iterVarName));
         }
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "text")) {
-            values.put("th:text", String.format("${#cls.alias(%s)}", spec.getIterVarName()));
+            values.put("th:text", String.format("${#cls.alias(%s)}", iterVarName));
         }
         if (!element.hasNormalizedAttribute(StandardDialect.PREFIX, "selected")) {
-            String selectPropertyNamme = getParentSelectPropertyName(element);
+            final String selectPropertyNamme = getParentSelectPropertyName(element);
             if (selectPropertyNamme != null) {
-                values.put("th:selected", String.format("${%s} == ${%s}", spec.getIterVarName(), selectPropertyNamme));
+                values.put("th:selected", String.format("${%s} == ${%s}", iterVarName, selectPropertyNamme));
             }
         }
         return values;

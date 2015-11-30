@@ -23,6 +23,7 @@ import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.dbflute.jdbc.Classification;
 import org.dbflute.jdbc.ClassificationMeta;
 import org.dbflute.optional.OptionalThing;
+import org.dbflute.util.Srl;
 import org.lastaflute.core.direction.FwAssistantDirector;
 import org.lastaflute.core.util.ContainerUtil;
 import org.lastaflute.db.dbflute.classification.ListedClassificationProvider;
@@ -52,6 +53,11 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
 public class ClassificationExpressionProcessor {
 
     // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
+    public static final String GROUP_DELIMITER = ".";
+
+    // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
     private final IProcessingContext processingContext;
@@ -67,16 +73,50 @@ public class ClassificationExpressionProcessor {
     //                                                                          Expression
     //                                                                          ==========
     // -----------------------------------------------------
+    //                                                list()
+    //                                                ------
+    /**
+     * Get list of specified classification.
+     * @param classificationName The name of classification, can contain group name by delimiter. (NotNull)
+     * @return The list of all classification. (NotNull)
+     */
+    public List<Classification> list(String classificationName) {
+        assertArgumentNotNull("classificationName", classificationName);
+        final String delimiter = GROUP_DELIMITER;
+        final String pureName;
+        final String groupName;
+        if (classificationName.contains(delimiter)) { // e.g. sea.land or maihamadb-sea.land
+            pureName = Srl.substringFirstFront(classificationName, delimiter); // e.g. sea or maihamadb-sea
+            groupName = Srl.substringFirstRear(classificationName, delimiter); // e.g. land
+        } else { // e.g. sea or maihamadb-sea
+            pureName = classificationName;
+            groupName = null;
+        }
+        final ClassificationMeta meta = findClassificationMeta(pureName, () -> {
+            return "list('" + classificationName + "')";
+        });
+        if (groupName != null) {
+            final List<Classification> groupOfList = meta.groupOf(groupName);
+            if (groupOfList.isEmpty()) { // means not found
+                throw new TemplateProcessingException("Not found the classification group: " + groupName + " of " + pureName);
+            }
+            return groupOfList;
+        } else {
+            return meta.listAll();
+        }
+    }
+
+    // -----------------------------------------------------
     //                                             listAll()
     //                                             ---------
     /**
      * Get list of all classification.
-     * @param classificationName The name of classification (NotNull)
+     * @param classificationName The name of classification. (NotNull)
      * @return The list of all classification. (NotNull)
      */
     public List<Classification> listAll(String classificationName) {
         assertArgumentNotNull("classificationName", classificationName);
-        return findClassificationMeta((String) classificationName, () -> {
+        return findClassificationMeta(classificationName, () -> {
             return "listAll('" + classificationName + "')";
         }).listAll();
     }
@@ -215,12 +255,13 @@ public class ClassificationExpressionProcessor {
         try {
             return provider.provide(classificationName);
         } catch (ProvidedClassificationNotFoundException e) {
-            throwListedClassificationNotFoundException(classificationName, callerInfo);
+            throwListedClassificationNotFoundException(classificationName, callerInfo, e);
             return null; // unreachable
         }
     }
 
-    protected void throwListedClassificationNotFoundException(String classificationName, Supplier<Object> callerInfo) {
+    protected void throwListedClassificationNotFoundException(String classificationName, Supplier<Object> callerInfo,
+            ProvidedClassificationNotFoundException cause) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Not found the classification for the list.");
         br.addItem("Requested Template Path");
@@ -230,7 +271,7 @@ public class ClassificationExpressionProcessor {
         br.addItem("Classification Name");
         br.addElement(classificationName);
         final String msg = br.buildExceptionMessage();
-        throw new TemplateProcessingException(msg);
+        throw new TemplateProcessingException(msg, cause);
     }
 
     // ===================================================================================
