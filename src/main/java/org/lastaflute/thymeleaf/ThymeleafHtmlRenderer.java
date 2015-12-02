@@ -37,7 +37,7 @@ import org.lastaflute.thymeleaf.messages.ErrorMessages;
 import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.exception.RequestForwardFailureException;
 import org.lastaflute.web.ruts.NextJourney;
-import org.lastaflute.web.ruts.VirtualActionForm;
+import org.lastaflute.web.ruts.VirtualForm;
 import org.lastaflute.web.ruts.config.ActionFormMeta;
 import org.lastaflute.web.ruts.config.ActionFormProperty;
 import org.lastaflute.web.ruts.message.ActionMessages;
@@ -220,14 +220,13 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
             if (properties.isEmpty()) {
                 return;
             }
-            final Object form = virtualForm.getRealForm();
             final VariablesMap<String, Object> variableMap = context.getVariables();
             for (ActionFormProperty property : properties) {
                 if (isExportableProperty(property.getPropertyDesc())) {
                     final String propertyName = property.getPropertyName();
                     checkFormPropertyUsingReservedWord(runtime, virtualForm, propertyName);
                     checkFormPropertyConflictingWithRegisteredData(runtime, variableMap, propertyName);
-                    final Object propertyValue = property.getPropertyValue(form);
+                    final Object propertyValue = virtualForm.getPropertyValue(property);
                     if (propertyValue != null) {
                         context.setVariable(propertyName, propertyValue);
                     }
@@ -243,7 +242,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     // -----------------------------------------------------
     //                                         Reserved Word
     //                                         -------------
-    protected void checkFormPropertyUsingReservedWord(ActionRuntime runtime, VirtualActionForm virtualForm, final String propertyName) {
+    protected void checkFormPropertyUsingReservedWord(ActionRuntime runtime, VirtualForm virtualForm, final String propertyName) {
         if (isSuppressFormPropertyUsingReservedWordCheck()) {
             return;
         }
@@ -256,7 +255,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         return false;
     }
 
-    protected void throwThymeleafFormPropertyUsingReservedWordException(ActionRuntime runtime, VirtualActionForm virtualForm,
+    protected void throwThymeleafFormPropertyUsingReservedWordException(ActionRuntime runtime, VirtualForm virtualForm,
             String propertyName) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Cannot use the property name '" + propertyName + "' in form.");
