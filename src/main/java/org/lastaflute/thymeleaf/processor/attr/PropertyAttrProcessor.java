@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor;
+package org.lastaflute.thymeleaf.processor.attr;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    private static final String PROPERTY_ATTRIBUTE_NAME = "property";
+    public static final String ATTRIBUTE_NAME = "property";
     private static final String APPEND_ERROR_STYLE_CLASS = "${errors.exists('%s')} ? 'validError'";
     private static final String APPEND_ERROR_STYLE_CLASS_ATTRAPEND = "class=(${errors.exists('%s')} ? ' validError')";
 
@@ -57,7 +57,7 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
     //                                                                         Constructor
     //                                                                         ===========
     public PropertyAttrProcessor() {
-        super(PROPERTY_ATTRIBUTE_NAME);
+        super(ATTRIBUTE_NAME);
     }
 
     // ===================================================================================
@@ -99,33 +99,33 @@ public class PropertyAttrProcessor extends AbstractAttributeModifierAttrProcesso
         final Map<String, String> values = new HashMap<String, String>();
         String propertyFieldName = getPropertyFieldName(arguments, element, configuration, propertyName);
         switch (element.getNormalizedName()) {
-            case "input":
-                if (!hasThName) {
-                    values.put("th:name", propertyFieldName);
+        case "input":
+            if (!hasThName) {
+                values.put("th:name", propertyFieldName);
+            }
+            if (!hasThValue) {
+                String type = element.getAttributeValueFromNormalizedName("type");
+                if (!("checkbox".equals(type) || "radio".equals(type))) {
+                    values.put("th:value", "${" + propertyName + "}");
                 }
-                if (!hasThValue) {
-                    String type = element.getAttributeValueFromNormalizedName("type");
-                    if (!("checkbox".equals(type) || "radio".equals(type))) {
-                        values.put("th:value", "${" + propertyName + "}");
-                    }
-                }
-                break;
-            case "select":
-                if (!hasThName) {
-                    values.put("th:name", propertyFieldName);
-                }
-                element.setNodeProperty(SELECT_PROPERTY_NAME, propertyName);
-                break;
-            case "textarea":
-                if (!hasThName) {
-                    values.put("th:name", propertyFieldName);
-                }
-                // not break.
-            default:
-                if (!hasThText) {
-                    values.put("th:text", "${" + propertyName + "}");
-                }
-                break;
+            }
+            break;
+        case "select":
+            if (!hasThName) {
+                values.put("th:name", propertyFieldName);
+            }
+            element.setNodeProperty(SELECT_PROPERTY_NAME, propertyName);
+            break;
+        case "textarea":
+            if (!hasThName) {
+                values.put("th:name", propertyFieldName);
+            }
+            // not break.
+        default:
+            if (!hasThText) {
+                values.put("th:text", "${" + propertyName + "}");
+            }
+            break;
         }
         if (!hasThClassAppend) {
             values.put("th:classappend", String.format(APPEND_ERROR_STYLE_CLASS, propertyFieldName));

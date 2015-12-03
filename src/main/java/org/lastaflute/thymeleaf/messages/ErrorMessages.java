@@ -78,44 +78,26 @@ public class ErrorMessages implements Serializable {
     // ===================================================================================
     //                                                                     Delegate Access
     //                                                                     ===============
-    /**
-     * @see org.lastaflute.web.ruts.message.ActionMessages#hasMessageOf(java.lang.String)
-     */
     public boolean exists(String property) { // e.g. th:unless="${errors.exists('seaName')}"
         return messages.hasMessageOf(property);
     }
 
-    /**
-     * @see org.lastaflute.web.ruts.message.ActionMessages#hasMessageOf(java.lang.String, java.lang.String)
-     */
     public boolean exists(String property, String key) { // e.g. th:unless="${errors.exists('seaName', 'errors.required')}"
         return messages.hasMessageOf(property, key);
     }
 
-    /**
-     * @see org.lastaflute.web.ruts.message.ActionMessages#isEmpty()
-     */
     public boolean isEmpty() { // e.g. th:unless="${errors.empty}"
         return messages.isEmpty();
     }
 
-    /**
-     * @see org.lastaflute.web.ruts.message.ActionMessages#isAccessed()
-     */
     public boolean isAccessed() { // e.g. th:unless="${errors.accessed}"
         return messages.isAccessed();
     }
 
-    /**
-     * @see org.lastaflute.web.ruts.message.ActionMessages#size()
-     */
     public int size() {
         return messages.size();
     }
 
-    /**
-     * @see org.lastaflute.web.ruts.message.ActionMessages#size(java.lang.String)
-     */
     public int size(String property) {
         return messages.size(property);
     }

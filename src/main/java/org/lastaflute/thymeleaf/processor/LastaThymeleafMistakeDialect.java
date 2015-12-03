@@ -15,7 +15,6 @@
  */
 package org.lastaflute.thymeleaf.processor;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -23,11 +22,10 @@ import java.util.Set;
 
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.ForEachAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.MistakeAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
-import org.lastaflute.thymeleaf.processor.expression.ClassificationExpressionProcessor;
-import org.lastaflute.thymeleaf.processor.expression.HandyDateExpressionProcessor;
 import org.thymeleaf.Configuration;
 import org.thymeleaf.context.IProcessingContext;
 import org.thymeleaf.dialect.AbstractXHTMLEnabledDialect;
@@ -39,23 +37,22 @@ import org.thymeleaf.processor.IProcessor;
  * @author schatten
  * @author jflute
  */
-public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implements IExpressionEnhancingDialect {
+public class LastaThymeleafMistakeDialect extends AbstractXHTMLEnabledDialect implements IExpressionEnhancingDialect {
 
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    protected static final String LASTA_TYMELEAF_DIALECT_PREFIX = "la";
+    protected static final String LASTA_TYMELEAF_DIALECT_PREFIX = "th";
 
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
     protected final Configuration configuration;
-    protected final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public LastaThymeleafDialect(Configuration configuration) {
+    public LastaThymeleafMistakeDialect(Configuration configuration) {
         this.configuration = configuration;
     }
 
@@ -69,57 +66,25 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
 
     @Override
     public Set<IProcessor> getProcessors() {
-        final Set<IProcessor> processors = createLastaProcessorsSet();
-        processors.addAll(getAdditionalProcessors());
-        return processors;
+        return createLastaProcessorsSet();
     }
 
     protected Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
-        processors.add(createErrorsAttrProcessor());
-        processors.add(createForEachAttrProcessor());
-        processors.add(createOptionClsAttrProcessor());
-        processors.add(createPropertyAttrProcessor());
-        processors.add(createTokenAttrProcessor());
+        processors.add(newMistakeAttrProcessor(ErrorsAttrProcessor.ATTRIBUTE_NAME));
+        processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME));
+        processors.add(newMistakeAttrProcessor(OptionClsAttrProcessor.ATTRIBUTE_NAME));
+        processors.add(newMistakeAttrProcessor(PropertyAttrProcessor.ATTRIBUTE_NAME));
+        processors.add(newMistakeAttrProcessor(TokenAttrProcessor.ATTRIBUTE_NAME));
         return processors;
     }
 
-    protected ErrorsAttrProcessor createErrorsAttrProcessor() {
-        return new ErrorsAttrProcessor();
-    }
-
-    protected ForEachAttrProcessor createForEachAttrProcessor() {
-        return new ForEachAttrProcessor();
-    }
-
-    protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
-        return new OptionClsAttrProcessor();
-    }
-
-    protected PropertyAttrProcessor createPropertyAttrProcessor() {
-        return new PropertyAttrProcessor();
-    }
-
-    protected TokenAttrProcessor createTokenAttrProcessor() {
-        return new TokenAttrProcessor();
+    protected MistakeAttrProcessor newMistakeAttrProcessor(String name) {
+        return new MistakeAttrProcessor(name);
     }
 
     @Override
     public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
-        final Map<String, Object> map = new HashMap<>();
-        map.put("handy", new HandyDateExpressionProcessor());
-        map.put("cls", new ClassificationExpressionProcessor(processingContext));
-        return map;
-    }
-
-    // ===================================================================================
-    //                                                                            Accessor
-    //                                                                            ========
-    public Set<IProcessor> getAdditionalProcessors() {
-        return Collections.unmodifiableSet(additionalProcessors);
-    }
-
-    public void addAdditionalProcessor(IProcessor processor) {
-        this.additionalProcessors.add(processor);
+        return new HashMap<>();
     }
 }
