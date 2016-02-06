@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import org.lastaflute.core.message.MessageManager;
-import org.lastaflute.web.ruts.message.ActionMessage;
+import org.lastaflute.core.message.UserMessage;
 import org.lastaflute.web.servlet.request.RequestManager;
 
 /**
@@ -36,13 +36,13 @@ public class ResolvedMessage implements Serializable {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected final ActionMessage message;
+    protected final UserMessage message;
     protected final RequestManager requestManager;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ResolvedMessage(ActionMessage origin, RequestManager requestManager) {
+    public ResolvedMessage(UserMessage origin, RequestManager requestManager) {
         this.message = origin;
         this.requestManager = requestManager;
     }
@@ -57,9 +57,9 @@ public class ResolvedMessage implements Serializable {
         if (message.isResource()) {
             final Locale locale = requestManager.getUserLocale();
             final MessageManager messageManager = requestManager.getMessageManager();
-            return messageManager.getMessage(locale, message.getKey());
+            return messageManager.getMessage(locale, message.getMessageKey());
         } else {
-            return message.getKey();
+            return message.getMessageKey();
         }
     }
 }

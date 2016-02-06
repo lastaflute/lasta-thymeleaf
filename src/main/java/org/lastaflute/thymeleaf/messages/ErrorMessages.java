@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dbflute.util.DfTypeUtil;
-import org.lastaflute.web.ruts.message.ActionMessage;
-import org.lastaflute.web.ruts.message.ActionMessages;
+import org.lastaflute.core.message.UserMessage;
+import org.lastaflute.core.message.UserMessages;
 import org.lastaflute.web.servlet.request.RequestManager;
 
 /**
@@ -41,13 +41,13 @@ public class ErrorMessages implements Serializable {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected final ActionMessages messages;
+    protected final UserMessages messages;
     protected final RequestManager requestManager;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ErrorMessages(ActionMessages origin, RequestManager requestManager) {
+    public ErrorMessages(UserMessages origin, RequestManager requestManager) {
         this.messages = origin;
         this.requestManager = requestManager;
     }
@@ -71,7 +71,7 @@ public class ErrorMessages implements Serializable {
         return list;
     }
 
-    protected ResolvedMessage createResolvedMessage(ActionMessage message) {
+    protected ResolvedMessage createResolvedMessage(UserMessage message) {
         return new ResolvedMessage(message, requestManager);
     }
 

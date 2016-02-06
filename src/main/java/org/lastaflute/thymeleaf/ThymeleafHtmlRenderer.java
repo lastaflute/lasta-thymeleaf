@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.dbflute.util.Srl;
+import org.lastaflute.core.message.UserMessages;
 import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyConflictingWithRegisteredDataException;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyUsingReservedWordException;
@@ -40,7 +41,6 @@ import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.VirtualForm;
 import org.lastaflute.web.ruts.config.ActionFormMeta;
 import org.lastaflute.web.ruts.config.ActionFormProperty;
-import org.lastaflute.web.ruts.message.ActionMessages;
 import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.servlet.request.RequestManager;
@@ -139,10 +139,10 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         return new ErrorMessages(extractActionErrors(requestManager), requestManager);
     }
 
-    protected ActionMessages extractActionErrors(RequestManager requestManager) { // from request and session
+    protected UserMessages extractActionErrors(RequestManager requestManager) { // from request and session
         final String attributeKey = getMessagesAttributeKey();
-        final Class<ActionMessages> attributeType = ActionMessages.class;
-        return requestManager.getAttribute(attributeKey, ActionMessages.class).orElseGet(() -> {
+        final Class<UserMessages> attributeType = UserMessages.class;
+        return requestManager.getAttribute(attributeKey, UserMessages.class).orElseGet(() -> {
             return requestManager.getSessionManager().getAttribute(attributeKey, attributeType).orElseGet(() -> {
                 return createEmptyMessages();
             });
@@ -153,8 +153,8 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         return LastaWebKey.ACTION_ERRORS_KEY;
     }
 
-    protected ActionMessages createEmptyMessages() {
-        return new ActionMessages();
+    protected UserMessages createEmptyMessages() {
+        return new UserMessages();
     }
 
     protected void setupVariableVersionQuery(RequestManager requestManager, WebContext context, ActionRuntime runtime) {
