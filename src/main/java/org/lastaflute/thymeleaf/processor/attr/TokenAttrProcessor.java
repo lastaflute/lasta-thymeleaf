@@ -20,6 +20,9 @@ import java.util.Map;
 
 import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.lastaflute.core.util.ContainerUtil;
+import org.lastaflute.thymeleaf.processor.attr.exception.ThymeleafTokenNotHiddenTypeException;
+import org.lastaflute.thymeleaf.processor.attr.exception.ThymeleafTokenNotInputTypeException;
+import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.token.DoubleSubmitManager;
 import org.lastaflute.web.util.LaActionRuntimeUtil;
@@ -78,14 +81,8 @@ public class TokenAttrProcessor extends AbstractAttributeModifierAttrProcessor {
                 throwThymeleafTokenNotHiddenTypeException(runtime, inputType);
             }
             if ("true".equalsIgnoreCase(specifiedValue)) { // #thinking how to remove this tag when false?
-                final DoubleSubmitManager doubleSubmitManager = getDoubleSubmitManager();
-                final String token = doubleSubmitManager.getSessionTokenMap().orElseThrow(() -> {
-                    return createThymeleafSessionTokenMapNotFoundException(runtime);
-                }).get(runtime.getActionType()).orElseThrow(() -> { // #thinking token group setting?
-                    return createThymeleafGroupTokenNotFoundException(runtime);
-                });
-                values.put("th:name", DoubleSubmitManager.TOKEN_KEY);
-                values.put("th:value", token);
+                values.put("th:name", LastaWebKey.TRANSACTION_TOKEN_KEY);
+                values.put("th:value", prepareTransactionToken(runtime));
             }
             break;
         default:
@@ -102,33 +99,78 @@ public class TokenAttrProcessor extends AbstractAttributeModifierAttrProcessor {
         return expression.execute(configuration, arguments).toString();
     }
 
-    // ===================================================================================
-    //                                                                        Assist Logic
-    //                                                                        ============
+    protected String prepareTransactionToken(ActionRuntime runtime) {
+        final String token = getDoubleSubmitManager().getSessionTokenMap().flatMap(tokenMap -> {
+            return tokenMap.get(runtime.getActionType());
+        }).orElse("none");
+        // *cannot check saveToken() call because of validation error after double-submitted
+        //final String token;
+        //if (doubleSubmitManager.isDoubleSubmittedRequest()) { // rendering after error here
+        //    token = "none"; // verified when submit by verifyToken()
+        //} else {
+        //    token = doubleSubmitManager.getSessionTokenMap().orElseThrow(() -> {
+        //        return createThymeleafSessionTokenMapNotFoundException(runtime);
+        //    }).get(runtime.getActionType()).orElseThrow(() -> { // #thinking token group setting?
+        //        return createThymeleafGroupTokenNotFoundException(runtime);
+        //    });
+        //}
+        return token;
+    }
+
     protected DoubleSubmitManager getDoubleSubmitManager() { // #pending want to cache
         return ContainerUtil.getComponent(DoubleSubmitManager.class);
     }
 
-    protected IllegalStateException createThymeleafSessionTokenMapNotFoundException(ActionRuntime runtime) {
-        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-        br.addNotice("Not found the session token map for the hidden token");
-        br.addItem("Advice");
-        br.addElement("Call saveToken() in your action for the view");
-        br.addElement("if you use la:token.");
-        br.addItem("Action");
-        br.addElement(runtime);
-        final String msg = br.buildExceptionMessage();
-        return new IllegalStateException(msg);
-    }
-
-    protected IllegalStateException createThymeleafGroupTokenNotFoundException(ActionRuntime runtime) {
-        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-        br.addNotice("Not found the token group for the action type.");
-        br.addItem("Action");
-        br.addElement(runtime);
-        final String msg = br.buildExceptionMessage();
-        return new IllegalStateException(msg);
-    }
+    // ===================================================================================
+    //                                                                    Exception Helper
+    //                                                                    ================
+    // *see getModifiedAttributeValues()
+    //protected RuntimeException createThymeleafSessionTokenMapNotFoundException(ActionRuntime runtime) {
+    //    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+    //    br.addNotice("Not found the session token map for the hidden token.");
+    //    br.addItem("Advice");
+    //    br.addElement("Call saveToken() in your action for the view");
+    //    br.addElement("if you use <input type=\"hidden\" la:token=\"true\"/>.");
+    //    br.addElement("For example:");
+    //    br.addElement("  (o):");
+    //    br.addElement("    public HtmlResponse index(Integer memberId) {");
+    //    br.addElement("        saveToken(); // Good");
+    //    br.addElement("        return asHtml(...);");
+    //    br.addElement("    }");
+    //    br.addElement("");
+    //    br.addElement("If that helps, you should call verifyToken() after validate()");
+    //    br.addElement("or this exception is thrown. (confirm the stack trace)");
+    //    br.addElement("For example:");
+    //    br.addElement("  (x):");
+    //    br.addElement("    public HtmlResponse update(Integer memberId) {");
+    //    br.addElement("        verifyToken(...); // *Bad: session token is deleted here");
+    //    br.addElement("        validate(form, messages -> {}, () -> { // may be this exception if validation error");
+    //    br.addElement("            return asHtml(path_...); // the html may need token...");
+    //    br.addElement("        });");
+    //    br.addElement("        ...");
+    //    br.addElement("    }");
+    //    br.addElement("  (o):");
+    //    br.addElement("    public HtmlResponse update(Integer memberId) {");
+    //    br.addElement("        validate(form, messages -> {}, () -> {");
+    //    br.addElement("            return asHtml(path_...); // session token remains");
+    //    br.addElement("        });");
+    //    br.addElement("        verifyToken(...); // Good");
+    //    br.addElement("        ...");
+    //    br.addElement("    }");
+    //    br.addItem("Action");
+    //    br.addElement(runtime);
+    //    final String msg = br.buildExceptionMessage();
+    //    return new ThymeleafSessionTokenMapNotFoundException(msg);
+    //}
+    //
+    //protected RuntimeException createThymeleafGroupTokenNotFoundException(ActionRuntime runtime) {
+    //    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+    //    br.addNotice("Not found the token group for the action type.");
+    //    br.addItem("Action");
+    //    br.addElement(runtime);
+    //    final String msg = br.buildExceptionMessage();
+    //    return new ThymeleafGroupTokenNotFoundException(msg);
+    //}
 
     protected void throwThymeleafTokenNotHiddenTypeException(ActionRuntime runtime, String inputType) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
@@ -144,7 +186,7 @@ public class TokenAttrProcessor extends AbstractAttributeModifierAttrProcessor {
         br.addItem("Input Type");
         br.addElement(inputType);
         final String msg = br.buildExceptionMessage();
-        throw new IllegalStateException(msg);
+        throw new ThymeleafTokenNotHiddenTypeException(msg);
     }
 
     protected void throwThymeleafTokenNotInputTypeException(ActionRuntime runtime, String tagName) {
@@ -161,7 +203,7 @@ public class TokenAttrProcessor extends AbstractAttributeModifierAttrProcessor {
         br.addItem("Tag Name");
         br.addElement(tagName);
         final String msg = br.buildExceptionMessage();
-        throw new IllegalStateException(msg);
+        throw new ThymeleafTokenNotInputTypeException(msg);
     }
 
     // ===================================================================================
