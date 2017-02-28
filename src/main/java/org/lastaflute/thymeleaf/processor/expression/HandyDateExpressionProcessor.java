@@ -17,11 +17,15 @@ package org.lastaflute.thymeleaf.processor.expression;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
 import org.dbflute.helper.HandyDate;
+import org.dbflute.util.Srl;
+import org.lastaflute.core.direction.AccessibleConfig;
+import org.lastaflute.core.util.ContainerUtil;
 import org.thymeleaf.exceptions.TemplateProcessingException;
 
 /**
@@ -47,11 +51,32 @@ public class HandyDateExpressionProcessor {
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
+    /** Date pattern used as default in format(), defined at your [app]_config.properties. */
+    public static final String KEY_OF_DATE_PATTERN = "app.standard.date.pattern";
+
+    /** Datetime pattern used as default in format(), defined at your [app]_config.properties. */
+    public static final String KEY_OF_DATETIME_PATTERN = "app.standard.datetime.pattern";
+
+    /** Time pattern used as default in format(), defined at your [app]_config.properties. */
+    public static final String KEY_OF_TIME_PATTERN = "app.standard.time.pattern";
+
+    /** Default date pattern for format(). */
+    public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd";
+
+    /** Default date-time pattern for format(). */
+    public static final String DEFAULT_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    /** Default time pattern for format(). */
+    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss";
+
+    // ===================================================================================
+    //                                                                           Attribute
+    //                                                                           =========
     /**
-     * Default date format pattern.
-     * HTML input type date is uses this pattern.
+     * The cached configuration of application, which can be lazy-loaded when you get it.
+     * Don't use these variables directly, you should use the getter. (NotNull: after lazy-load)
      */
-    public static final String DEFAULT_DATE_FORMAT_PATTERN = "yyyy-MM-dd";
+    protected AccessibleConfig cachedApplicationConfig;
 
     // ===================================================================================
     //                                                                          Handy Date
@@ -74,7 +99,7 @@ public class HandyDateExpressionProcessor {
         if (expression instanceof String) {
             return create((String) expression);
         }
-        String msg = "First argument as one argument should be LocalDate or LocalDateTime or Date or String(expression).";
+        String msg = "First argument as one argument should be LocalDate or LocalDateTime or Date or String(expression): " + expression;
         throw new TemplateProcessingException(msg);
     }
 
@@ -96,17 +121,18 @@ public class HandyDateExpressionProcessor {
                 return create((String) expression, (TimeZone) arg2);
             }
             String msg =
-                    "First argument as two arguments should be LocalDate or LocalDateTime or String(expression) when second argument is TimeZone.";
+                    "First argument as two arguments should be LocalDate or LocalDateTime or String(expression) when second argument is TimeZone: "
+                            + expression;
             throw new TemplateProcessingException(msg);
         }
         if (arg2 instanceof String) {
             if (expression instanceof String) {
                 return create((String) expression, (String) arg2);
             }
-            String msg = "First argument as two arguments should be String when second argument is String(pattern).";
+            String msg = "First argument as two arguments should be String when second argument is String(pattern): " + expression;
             throw new TemplateProcessingException(msg);
         }
-        String msg = "Second argument as two arguments should be TimeZone or String(pattern).";
+        String msg = "Second argument as two arguments should be TimeZone or String(pattern): " + arg2;
         throw new TemplateProcessingException(msg);
     }
 
@@ -119,15 +145,15 @@ public class HandyDateExpressionProcessor {
      */
     public HandyDate date(Object expression, Object pattern, Object locale) {
         if (!(expression instanceof String)) {
-            String msg = "First argument as three arguments should be String(expression).";
+            String msg = "First argument as three arguments should be String(expression): " + expression;
             throw new TemplateProcessingException(msg);
         }
         if (!(pattern instanceof String)) {
-            String msg = "Second argument as three arguments should be TimeZone or String(pattern).";
+            String msg = "Second argument as three arguments should be TimeZone or String(pattern): " + pattern;
             throw new TemplateProcessingException(msg);
         }
         if (!(locale instanceof Locale)) {
-            String msg = "Third argument as three arguments should be Locale.";
+            String msg = "Third argument as three arguments should be Locale: " + locale;
             throw new TemplateProcessingException(msg);
         }
         return create((String) expression, (String) pattern, (Locale) locale);
@@ -143,19 +169,19 @@ public class HandyDateExpressionProcessor {
      */
     public HandyDate date(Object expression, Object timeZone, Object pattern, Object locale) {
         if (!(expression instanceof String)) {
-            String msg = "First argument as four arguments should be String(expression).";
+            String msg = "First argument as four arguments should be String(expression): " + expression;
             throw new TemplateProcessingException(msg);
         }
         if (!(timeZone instanceof TimeZone)) {
-            String msg = "Second argument as four arguments should be TimeZone.";
+            String msg = "Second argument as four arguments should be TimeZone: " + timeZone;
             throw new TemplateProcessingException(msg);
         }
         if (!(pattern instanceof String)) {
-            String msg = "Third argument as four arguments should be TimeZone or String(pattern).";
+            String msg = "Third argument as four arguments should be TimeZone or String(pattern): " + pattern;
             throw new TemplateProcessingException(msg);
         }
         if (!(locale instanceof Locale)) {
-            String msg = "Fourth argument as four arguments should be Locale.";
+            String msg = "Fourth argument as four arguments should be Locale: " + locale;
             throw new TemplateProcessingException(msg);
         }
         return create((String) expression, (TimeZone) timeZone, (String) pattern, (Locale) locale);
@@ -165,47 +191,91 @@ public class HandyDateExpressionProcessor {
     //                                                                              Format
     //                                                                              ======
     /**
-     * Get formatted date string.
-     * Using pattern of default.
-     * @param expression Date expression.
-     * @return formatted date string. (NullAllowed: if expression is null.)
+     * Get formatted date string, using application standard pattern or default pattern.
+     * @param expression Date expression. (NullAllowed: if null, returns null)
+     * @return formatted date string. (NullAllowed: if expression is null)
      */
     public String format(Object expression) {
-        return format(expression, getDateFormatPattern());
+        return format(expression, chooseDateFormatPattern(expression));
     }
 
-    protected String getDateFormatPattern() {
-        return DEFAULT_DATE_FORMAT_PATTERN;
+    protected String chooseDateFormatPattern(Object expression) {
+        if (expression == null) {
+            return DEFAULT_DATETIME_PATTERN; // unused: returns null
+        }
+        final AccessibleConfig config = getApplicationConfig();
+        if (expression instanceof LocalDate) {
+            return getAppStandardPatternDate(config);
+        } else if (expression instanceof LocalDateTime) {
+            return getAppStandardPatternDatetime(config);
+        } else if (expression instanceof LocalTime) {
+            return getAppStandardPatternTime(config);
+        } else if (expression instanceof java.sql.Timestamp) {
+            return getAppStandardPatternDatetime(config);
+        } else if (expression instanceof java.sql.Time) {
+            return getAppStandardPatternTime(config);
+        } else if (expression instanceof java.util.Date) {
+            return getAppStandardPatternDate(config);
+        } else { // unknown expression
+            return DEFAULT_DATETIME_PATTERN; // unused: basicaly error by other process
+        }
+    }
+
+    protected String getAppStandardPatternDate(AccessibleConfig config) {
+        return config.getOrDefault(KEY_OF_DATE_PATTERN, DEFAULT_DATE_PATTERN);
+    }
+
+    protected String getAppStandardPatternDatetime(AccessibleConfig config) {
+        return config.getOrDefault(KEY_OF_DATETIME_PATTERN, DEFAULT_DATETIME_PATTERN);
+    }
+
+    protected String getAppStandardPatternTime(AccessibleConfig config) {
+        return config.getOrDefault(KEY_OF_TIME_PATTERN, DEFAULT_TIME_PATTERN);
     }
 
     /**
      * Get formatted date string.
-     * @param expression Date expression.
-     * @param pattern date format pattern.
-     * @return formatted date string.(Return null if expression is null.)
+     * @param expression Date expression. (NullAllowed: if null, returns null)
+     * @param objPattern date format pattern. (NotNull)
+     * @return formatted date string. (NullAllowed: if expression is null.)
      */
-    public String format(Object expression, Object pattern) {
-        if (pattern instanceof String) {
+    public String format(Object expression, Object objPattern) {
+        if (objPattern instanceof String) {
+            final String pattern = filterPattern((String) objPattern);
             if (expression == null) {
                 return null;
             }
             if (expression instanceof LocalDate) {
-                return create((LocalDate) expression).toDisp((String) pattern);
+                return create((LocalDate) expression).toDisp(pattern);
             }
             if (expression instanceof LocalDateTime) {
-                return create((LocalDateTime) expression).toDisp((String) pattern);
+                return create((LocalDateTime) expression).toDisp(pattern);
             }
-            if (expression instanceof Date) {
-                return create((Date) expression).toDisp((String) pattern);
+            if (expression instanceof java.util.Date) {
+                return create((java.util.Date) expression).toDisp(pattern);
             }
             if (expression instanceof String) {
-                return create((String) expression).toDisp((String) pattern);
+                return create((String) expression).toDisp(pattern);
             }
-            String msg = "First argument as two arguments should be LocalDate or LocalDateTime or Date or String(expression).";
+            String msg =
+                    "First argument as two arguments should be LocalDate or LocalDateTime or Date or String(expression): " + expression;
             throw new TemplateProcessingException(msg);
         }
-        String msg = "Second argument as two arguments should be String(pattern).";
+        String msg = "Second argument as two arguments should be String(pattern): objPattern=" + objPattern;
         throw new TemplateProcessingException(msg);
+    }
+
+    protected String filterPattern(String pattern) {
+        if (pattern.contains("$$")) {
+            final AccessibleConfig config = getApplicationConfig();
+            String filtered = pattern;
+            filtered = Srl.replace(filtered, "$$date$$", getAppStandardPatternDate(config));
+            filtered = Srl.replace(filtered, "$$datetime$$", getAppStandardPatternDatetime(config));
+            filtered = Srl.replace(filtered, "$$time$$", getAppStandardPatternTime(config));
+            return filtered;
+        } else {
+            return pattern;
+        }
     }
 
     // ===================================================================================
@@ -249,5 +319,21 @@ public class HandyDateExpressionProcessor {
 
     protected static HandyDate create(String exp, TimeZone timeZone, String pattern, Locale locale) {
         return new HandyDate(exp, timeZone, pattern, locale);
+    }
+
+    // ===================================================================================
+    //                                                                            Accessor
+    //                                                                            ========
+    protected AccessibleConfig getApplicationConfig() {
+        if (cachedApplicationConfig != null) {
+            return cachedApplicationConfig;
+        }
+        synchronized (this) {
+            if (cachedApplicationConfig != null) {
+                return cachedApplicationConfig;
+            }
+            cachedApplicationConfig = ContainerUtil.getComponent(AccessibleConfig.class);
+        }
+        return cachedApplicationConfig;
     }
 }
