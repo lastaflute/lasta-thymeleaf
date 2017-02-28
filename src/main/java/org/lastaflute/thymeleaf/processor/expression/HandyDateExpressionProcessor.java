@@ -93,10 +93,10 @@ public class HandyDateExpressionProcessor {
         if (expression instanceof LocalDateTime) {
             return create((LocalDateTime) expression);
         }
-        if (expression instanceof Date) {
-            return create((Date) expression);
+        if (expression instanceof java.util.Date) {
+            return create((java.util.Date) expression);
         }
-        if (expression instanceof String) {
+        if (expression instanceof String) { // basically unused so uses default parsing
             return create((String) expression);
         }
         String msg = "First argument as one argument should be LocalDate or LocalDateTime or Date or String(expression): " + expression;
@@ -270,6 +270,8 @@ public class HandyDateExpressionProcessor {
     //                                  Application Standard
     //                                  --------------------
     // #for_now application standard date patterns are only format() (not used at parsing date)
+    // it cannot determine date, date-time, time when parsing string expression so difficult
+    // however low priority because parsing string expression is rare case on HTML template 
     protected String getAppStandardPatternDate(AccessibleConfig config) {
         return config.getOrDefault(KEY_OF_DATE_PATTERN, DEFAULT_DATE_PATTERN);
     }
