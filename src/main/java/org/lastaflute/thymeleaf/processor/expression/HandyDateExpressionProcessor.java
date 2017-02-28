@@ -221,18 +221,6 @@ public class HandyDateExpressionProcessor {
         }
     }
 
-    protected String getAppStandardPatternDate(AccessibleConfig config) {
-        return config.getOrDefault(KEY_OF_DATE_PATTERN, DEFAULT_DATE_PATTERN);
-    }
-
-    protected String getAppStandardPatternDatetime(AccessibleConfig config) {
-        return config.getOrDefault(KEY_OF_DATETIME_PATTERN, DEFAULT_DATETIME_PATTERN);
-    }
-
-    protected String getAppStandardPatternTime(AccessibleConfig config) {
-        return config.getOrDefault(KEY_OF_TIME_PATTERN, DEFAULT_TIME_PATTERN);
-    }
-
     /**
      * Get formatted date string.
      * @param expression Date expression. (NullAllowed: if null, returns null)
@@ -276,6 +264,22 @@ public class HandyDateExpressionProcessor {
         } else {
             return pattern;
         }
+    }
+
+    // -----------------------------------------------------
+    //                                  Application Standard
+    //                                  --------------------
+    // #for_now application standard date patterns are only format() (not used at parsing date)
+    protected String getAppStandardPatternDate(AccessibleConfig config) {
+        return config.getOrDefault(KEY_OF_DATE_PATTERN, DEFAULT_DATE_PATTERN);
+    }
+
+    protected String getAppStandardPatternDatetime(AccessibleConfig config) {
+        return config.getOrDefault(KEY_OF_DATETIME_PATTERN, DEFAULT_DATETIME_PATTERN);
+    }
+
+    protected String getAppStandardPatternTime(AccessibleConfig config) {
+        return config.getOrDefault(KEY_OF_TIME_PATTERN, DEFAULT_TIME_PATTERN);
     }
 
     // ===================================================================================
