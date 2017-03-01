@@ -44,7 +44,8 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    protected static final String LASTA_TYMELEAF_DIALECT_PREFIX = "la";
+    public static final String LASTA_THYMELEAF_DIALECT_PREFIX = "la";
+    protected static final HandyDateExpressionProcessor HANDY_DATE_EXPRESSION_PROCESSOR = new HandyDateExpressionProcessor();
 
     // ===================================================================================
     //                                                                           Attribute
@@ -64,7 +65,7 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     //                                                                          ==========
     @Override
     public String getPrefix() {
-        return LASTA_TYMELEAF_DIALECT_PREFIX;
+        return LASTA_THYMELEAF_DIALECT_PREFIX;
     }
 
     @Override
@@ -107,7 +108,7 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     @Override
     public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
         final Map<String, Object> map = new HashMap<>();
-        map.put("handy", new HandyDateExpressionProcessor());
+        map.put("handy", HANDY_DATE_EXPRESSION_PROCESSOR); // stateless so recycle
         map.put("cls", new ClassificationExpressionProcessor(processingContext));
         return map;
     }
