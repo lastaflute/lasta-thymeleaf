@@ -8,7 +8,7 @@ Thymeleaf adapter for LastaFlute
 <dependency>
     <groupId>org.lastaflute.html</groupId>
     <artifactId>lasta-thymeleaf</artifactId>
-    <version>0.2.9</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 

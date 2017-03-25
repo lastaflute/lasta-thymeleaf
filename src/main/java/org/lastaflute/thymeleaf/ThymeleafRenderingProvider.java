@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.lastaflute.thymeleaf;
 
+import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
 import org.lastaflute.thymeleaf.processor.LastaThymeleafDialect;
 import org.lastaflute.thymeleaf.processor.LastaThymeleafMistakeDialect;
 import org.lastaflute.web.response.HtmlResponse;
@@ -23,6 +24,7 @@ import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.ruts.renderer.HtmlRenderingProvider;
 import org.lastaflute.web.util.LaServletContextUtil;
+import org.thymeleaf.Configuration;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
@@ -31,6 +33,7 @@ import org.thymeleaf.templateresolver.TemplateResolver;
 /**
  * Thymeleaf rendering provider of Lastaflute.
  * @author schatten
+ * @author jflute
  */
 public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
 
@@ -44,6 +47,7 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     //                                                                           Attribute
     //                                                                           =========
     protected boolean development;
+    protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
     private TemplateEngine cachedTemplateEngine;
 
     // ===================================================================================
@@ -51,6 +55,14 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     //                                                                              ======
     public ThymeleafRenderingProvider asDevelopment(boolean development) {
         this.development = development;
+        return this;
+    }
+
+    public ThymeleafRenderingProvider additionalExpression(ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper) {
+        if (additionalExpressionSetupper == null) {
+            throw new IllegalArgumentException("The argument 'additionalExpressionSetupper' should not be null.");
+        }
+        this.additionalExpressionSetupper = additionalExpressionSetupper;
         return this;
     }
 
@@ -114,6 +126,9 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         engine.addDialect(createLastaThymeleafMistakeDialect(engine));
     }
 
+    // -----------------------------------------------------
+    //                                     Template Resolver
+    //                                     -----------------
     protected TemplateResolver createTemplateResolver() {
         final ServletContextTemplateResolver resolver = newServletContextTemplateResolver();
         resolver.setPrefix(getHtmlViewPrefix());
@@ -143,6 +158,9 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         return !development;
     }
 
+    // -----------------------------------------------------
+    //                                      Message Resolver
+    //                                      ----------------
     protected StandardMessageResolver createStandardMessageResolver() {
         final StandardMessageResolver resolver = new StandardMessageResolver();
         resolver.setOrder(1);
@@ -150,15 +168,33 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     }
 
     protected LastaThymeleafMessageResolver createLastaThymeleafMessageResolver() {
-        final LastaThymeleafMessageResolver resolver = new LastaThymeleafMessageResolver();
+        final LastaThymeleafMessageResolver resolver = newLastaThymeleafMessageResolver();
         resolver.setOrder(10);
         return resolver;
     }
 
-    protected LastaThymeleafDialect createLastaThymeleafDialect(TemplateEngine engine) {
-        return new LastaThymeleafDialect(engine.getConfiguration());
+    protected LastaThymeleafMessageResolver newLastaThymeleafMessageResolver() {
+        return new LastaThymeleafMessageResolver();
     }
 
+    // -----------------------------------------------------
+    //                                          Main Dialect
+    //                                          ------------
+    protected LastaThymeleafDialect createLastaThymeleafDialect(TemplateEngine engine) {
+        final LastaThymeleafDialect dialect = newLastaThymeleafDialect(engine.getConfiguration());
+        if (additionalExpressionSetupper != null) {
+            dialect.additionalExpression(additionalExpressionSetupper);
+        }
+        return dialect;
+    }
+
+    protected LastaThymeleafDialect newLastaThymeleafDialect(Configuration configuration) {
+        return new LastaThymeleafDialect(configuration);
+    }
+
+    // -----------------------------------------------------
+    //                                       Mistake Dialect
+    //                                       ---------------
     protected LastaThymeleafMistakeDialect createLastaThymeleafMistakeDialect(TemplateEngine engine) {
         return new LastaThymeleafMistakeDialect(engine.getConfiguration());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ public class ClassificationExpressionProcessor {
     //                                               alias()
     //                                               -------
     /**
-     * Get Classification alias.
+     * Get classification alias.
      * @param cls The instance of classification to get code. (NotNull)
      * @return The alias of classification. (NotNull: if not classification, throws exception)
      */
@@ -133,6 +133,21 @@ public class ClassificationExpressionProcessor {
         assertArgumentNotNull("cls", cls);
         assertCanBeClassification(cls);
         return findClassificationAlias((Classification) cls);
+    }
+
+    /**
+     * Get classification alias or default value if the classification is null.
+     * @param cls The instance of classification to get code. (NotNull)
+     * @param defaultValue The default value for no classification. (NotNull, EmptyAllowed)
+     * @return The alias of classification. (NotNull: if not classification, throws exception)
+     */
+    public String alias(Object cls, String defaultValue) {
+        assertArgumentNotNull("defaultValue", defaultValue);
+        if (cls != null) {
+            return alias(cls);
+        } else {
+            return defaultValue;
+        }
     }
 
     // should be by-code, and may be unneeded by native property in form
@@ -221,7 +236,8 @@ public class ClassificationExpressionProcessor {
     }
 
     protected Locale getUserLocale() {
-        final IProcessingContext context = getProcessingContext();
+        // #hope locale from request manager, how to set? by jflute (2017/03/19)
+        final IProcessingContext context = getProcessingContext(); // null check just in case?
         return context != null ? context.getContext().getLocale() : Locale.getDefault();
     }
 
