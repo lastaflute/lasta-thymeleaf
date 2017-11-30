@@ -16,24 +16,18 @@
 package org.lastaflute.thymeleaf.processor;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
-import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionResource;
 import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.ForEachAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
-import org.lastaflute.thymeleaf.processor.expression.ClassificationExpressionProcessor;
 import org.lastaflute.thymeleaf.processor.expression.HandyDateExpressionProcessor;
-import org.thymeleaf.Configuration;
-import org.thymeleaf.context.IProcessingContext;
-import org.thymeleaf.dialect.AbstractXHTMLEnabledDialect;
-import org.thymeleaf.dialect.IExpressionEnhancingDialect;
+import org.thymeleaf.DialectConfiguration;
+import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
 
 /**
@@ -41,7 +35,7 @@ import org.thymeleaf.processor.IProcessor;
  * @author schatten
  * @author jflute
  */
-public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implements IExpressionEnhancingDialect {
+public class LastaThymeleafDialect extends AbstractProcessorDialect {
 
     // ===================================================================================
     //                                                                          Definition
@@ -52,14 +46,15 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected final Configuration configuration; // not null
+    protected final DialectConfiguration configuration; // not null
     protected final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
     protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public LastaThymeleafDialect(Configuration configuration) {
+    public LastaThymeleafDialect(DialectConfiguration configuration) {
+        super("lasta", LASTA_THYMELEAF_DIALECT_PREFIX, 1000);
         this.configuration = configuration;
     }
 
@@ -75,12 +70,7 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
     //                                                                          Implements
     //                                                                          ==========
     @Override
-    public String getPrefix() {
-        return LASTA_THYMELEAF_DIALECT_PREFIX;
-    }
-
-    @Override
-    public Set<IProcessor> getProcessors() {
+    public Set<IProcessor> getProcessors(String dialectPrefix) {
         final Set<IProcessor> processors = createLastaProcessorsSet();
         processors.addAll(getAdditionalProcessors());
         return processors;
@@ -88,11 +78,12 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
 
     protected Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
-        processors.add(createErrorsAttrProcessor());
-        processors.add(createForEachAttrProcessor());
-        processors.add(createOptionClsAttrProcessor());
-        processors.add(createPropertyAttrProcessor());
-        processors.add(createTokenAttrProcessor());
+        // TODO jflute #thymeleaf3 (2017/11/30)
+        //processors.add(createErrorsAttrProcessor());
+        //processors.add(createForEachAttrProcessor());
+        //processors.add(createOptionClsAttrProcessor());
+        //processors.add(createPropertyAttrProcessor());
+        //processors.add(createTokenAttrProcessor());
         return processors;
     }
 
@@ -116,32 +107,33 @@ public class LastaThymeleafDialect extends AbstractXHTMLEnabledDialect implement
         return new TokenAttrProcessor();
     }
 
-    @Override
-    public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
-        final Map<String, Object> processorMap = new HashMap<>();
-        processorMap.put("handy", HANDY_DATE_EXPRESSION_PROCESSOR); // stateless so recycle
-        processorMap.put("cls", createClassificationExpressionProcessor(processingContext));
-        if (additionalExpressionSetupper != null) {
-            final ThymeleafAdditionalExpressionResource resource = createThymeleafCustomExpressionResource(processingContext);
-            additionalExpressionSetupper.setup(resource);
-            resource.getProcessorMap().forEach((key, processor) -> {
-                if (processorMap.containsKey(key)) {
-                    String msg = "The processor key already exists in processor map: " + key + ", " + processorMap.keySet();
-                    throw new IllegalStateException(msg);
-                }
-                processorMap.put(key, processor);
-            });
-        }
-        return processorMap;
-    }
-
-    protected ClassificationExpressionProcessor createClassificationExpressionProcessor(IProcessingContext processingContext) {
-        return new ClassificationExpressionProcessor(processingContext);
-    }
-
-    protected ThymeleafAdditionalExpressionResource createThymeleafCustomExpressionResource(IProcessingContext processingContext) {
-        return new ThymeleafAdditionalExpressionResource(processingContext);
-    }
+    // TODO jflute #thymeleaf3 (2017/11/30)
+    //@Override
+    //public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
+    //    final Map<String, Object> processorMap = new HashMap<>();
+    //    processorMap.put("handy", HANDY_DATE_EXPRESSION_PROCESSOR); // stateless so recycle
+    //    processorMap.put("cls", createClassificationExpressionProcessor(processingContext));
+    //    if (additionalExpressionSetupper != null) {
+    //        final ThymeleafAdditionalExpressionResource resource = createThymeleafCustomExpressionResource(processingContext);
+    //        additionalExpressionSetupper.setup(resource);
+    //        resource.getProcessorMap().forEach((key, processor) -> {
+    //            if (processorMap.containsKey(key)) {
+    //                String msg = "The processor key already exists in processor map: " + key + ", " + processorMap.keySet();
+    //                throw new IllegalStateException(msg);
+    //            }
+    //            processorMap.put(key, processor);
+    //        });
+    //    }
+    //    return processorMap;
+    //}
+    //
+    //protected ClassificationExpressionProcessor createClassificationExpressionProcessor(IProcessingContext processingContext) {
+    //    return new ClassificationExpressionProcessor(processingContext);
+    //}
+    //
+    //protected ThymeleafAdditionalExpressionResource createThymeleafCustomExpressionResource(IProcessingContext processingContext) {
+    //    return new ThymeleafAdditionalExpressionResource(processingContext);
+    //}
 
     // ===================================================================================
     //                                                                            Accessor
