@@ -61,8 +61,8 @@ public class ThymeleafPlainTrialTest extends PlainTestCase {
         Map<String, Object> variableMap = new HashMap<>();
         HeaderBean headerBean = new HeaderBean();
         headerBean.isLogin = true;
-        headerBean.memberName = "judy suto";
-        variableMap.put("title", "jiro-san, ramen daisuki");
+        headerBean.memberName = "jflute";
+        variableMap.put("title", "trial2's contents");
         variableMap.put("headerBean", headerBean);
 
         IContext context = new Context(Locale.ENGLISH, variableMap);
