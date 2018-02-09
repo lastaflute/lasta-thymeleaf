@@ -22,18 +22,16 @@ import java.util.Map;
 
 import org.dbflute.utflute.core.PlainTestCase;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.TemplateSpec;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.context.IContext;
-import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.FileTemplateResolver;
 
 /**
  * @author jflute
  */
-public class ThymeleafPlainTrialTest extends PlainTestCase {
+public class ThymeleafPlainTryTest extends PlainTestCase {
 
-    private static final String BASE_DIR = "/target/test-classes/trial-templates";
+    private static final String BASE_DIR = "/target/test-classes/try-templates";
 
     public void test_trial1() throws IOException {
         // ## Arrange ##
@@ -42,7 +40,7 @@ public class ThymeleafPlainTrialTest extends PlainTestCase {
 
         // ## Act ##
         String canonicalPath = getProjectDir().getCanonicalPath();
-        String template = canonicalPath + BASE_DIR + "/thymeleaf-trial1.html";
+        String template = canonicalPath + BASE_DIR + "/thymeleaf-try1-no-th.html";
         Context context = new Context();
         String processed = engine.process(template, context);
 
@@ -62,12 +60,12 @@ public class ThymeleafPlainTrialTest extends PlainTestCase {
         HeaderBean headerBean = new HeaderBean();
         headerBean.isLogin = true;
         headerBean.memberName = "jflute";
-        variableMap.put("title", "trial2's contents");
+        variableMap.put("title", "try's contents");
         variableMap.put("headerBean", headerBean);
 
         IContext context = new Context(Locale.ENGLISH, variableMap);
-        String template = canonicalPath + BASE_DIR + "/thymeleaf-trial2.html";
-        String processed = engine.process(new TemplateSpec(template, TemplateMode.XML), context);
+        String template = canonicalPath + BASE_DIR + "/thymeleaf-try2-simple-th.html";
+        String processed = engine.process(template, context);
 
         // ## Assert ##
         log(ln() + processed);
