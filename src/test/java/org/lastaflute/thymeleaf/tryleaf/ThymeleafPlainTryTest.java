@@ -33,7 +33,7 @@ public class ThymeleafPlainTryTest extends PlainTestCase {
 
     private static final String BASE_DIR = "/target/test-classes/try-templates";
 
-    public void test_trial1() throws IOException {
+    public void test_try1() throws IOException {
         // ## Arrange ##
         TemplateEngine engine = new TemplateEngine();
         engine.addTemplateResolver(new FileTemplateResolver());
@@ -48,7 +48,7 @@ public class ThymeleafPlainTryTest extends PlainTestCase {
         log(ln() + processed);
     }
 
-    public void test_trial2() throws Exception {
+    public void test_try2() throws Exception {
         // ## Arrange ##
         TemplateEngine engine = new TemplateEngine();
         engine.addTemplateResolver(new FileTemplateResolver());
