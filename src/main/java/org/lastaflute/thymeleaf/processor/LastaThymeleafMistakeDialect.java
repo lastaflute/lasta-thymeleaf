@@ -15,9 +15,7 @@
  */
 package org.lastaflute.thymeleaf.processor;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
@@ -26,10 +24,8 @@ import org.lastaflute.thymeleaf.processor.attr.MistakeAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
-import org.thymeleaf.Configuration;
-import org.thymeleaf.context.IProcessingContext;
-import org.thymeleaf.dialect.AbstractXHTMLEnabledDialect;
-import org.thymeleaf.dialect.IExpressionEnhancingDialect;
+import org.thymeleaf.DialectConfiguration;
+import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
 
 /**
@@ -37,22 +33,23 @@ import org.thymeleaf.processor.IProcessor;
  * @author schatten
  * @author jflute
  */
-public class LastaThymeleafMistakeDialect extends AbstractXHTMLEnabledDialect implements IExpressionEnhancingDialect {
+public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
 
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    protected static final String LASTA_TYMELEAF_DIALECT_PREFIX = "th";
+    protected static final String LASTA_THYMELEAF_DIALECT_PREFIX = "th";
 
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected final Configuration configuration;
+    protected final DialectConfiguration configuration;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public LastaThymeleafMistakeDialect(Configuration configuration) {
+    public LastaThymeleafMistakeDialect(DialectConfiguration configuration) {
+        super("lasta-mistake", LASTA_THYMELEAF_DIALECT_PREFIX, 1000);
         this.configuration = configuration;
     }
 
@@ -60,12 +57,7 @@ public class LastaThymeleafMistakeDialect extends AbstractXHTMLEnabledDialect im
     //                                                                          Implements
     //                                                                          ==========
     @Override
-    public String getPrefix() {
-        return LASTA_TYMELEAF_DIALECT_PREFIX;
-    }
-
-    @Override
-    public Set<IProcessor> getProcessors() {
+    public Set<IProcessor> getProcessors(String dialectPrefix) {
         return createLastaProcessorsSet();
     }
 
@@ -83,8 +75,9 @@ public class LastaThymeleafMistakeDialect extends AbstractXHTMLEnabledDialect im
         return new MistakeAttrProcessor(name);
     }
 
-    @Override
-    public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
-        return new HashMap<>();
-    }
+    // TODO jflute #thymeleaf3 (2018/03/14)
+    //@Override
+    //public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
+    //    return new HashMap<>();
+    //}
 }
