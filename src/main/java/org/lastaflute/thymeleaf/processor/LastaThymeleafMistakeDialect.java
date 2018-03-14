@@ -19,18 +19,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.ForEachAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.MistakeAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
-import org.thymeleaf.DialectConfiguration;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
 
 /**
- * Lasta Thymeleaf Dialect.
- * @author schatten
  * @author jflute
  */
 public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
@@ -41,16 +34,10 @@ public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
     protected static final String LASTA_THYMELEAF_DIALECT_PREFIX = "th";
 
     // ===================================================================================
-    //                                                                           Attribute
-    //                                                                           =========
-    protected final DialectConfiguration configuration;
-
-    // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public LastaThymeleafMistakeDialect(DialectConfiguration configuration) {
+    public LastaThymeleafMistakeDialect() {
         super("lasta-mistake", LASTA_THYMELEAF_DIALECT_PREFIX, 1000);
-        this.configuration = configuration;
     }
 
     // ===================================================================================
@@ -63,19 +50,21 @@ public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
 
     protected Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
-        processors.add(newMistakeAttrProcessor(ErrorsAttrProcessor.ATTRIBUTE_NAME));
-        processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME));
-        processors.add(newMistakeAttrProcessor(OptionClsAttrProcessor.ATTRIBUTE_NAME));
-        processors.add(newMistakeAttrProcessor(PropertyAttrProcessor.ATTRIBUTE_NAME));
-        processors.add(newMistakeAttrProcessor(TokenAttrProcessor.ATTRIBUTE_NAME));
+        processors.add(createMistakeAttrProcessor(ErrorsAttrProcessor.ATTR_NAME));
+
+        // TODO jflute #thymeleaf3 processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME)) (2018/03/14)
+        //processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME));
+        //processors.add(newMistakeAttrProcessor(OptionClsAttrProcessor.ATTRIBUTE_NAME));
+        //processors.add(newMistakeAttrProcessor(PropertyAttrProcessor.ATTRIBUTE_NAME));
+        //processors.add(newMistakeAttrProcessor(TokenAttrProcessor.ATTRIBUTE_NAME));
         return processors;
     }
 
-    protected MistakeAttrProcessor newMistakeAttrProcessor(String name) {
-        return new MistakeAttrProcessor(name);
+    protected MistakeAttrProcessor createMistakeAttrProcessor(String attrName) {
+        return new MistakeAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, attrName);
     }
 
-    // TODO jflute #thymeleaf3 (2018/03/14)
+    // TODO jflute #thymeleaf3 getAdditionalExpressionObjects() (2018/03/14)
     //@Override
     //public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
     //    return new HashMap<>();

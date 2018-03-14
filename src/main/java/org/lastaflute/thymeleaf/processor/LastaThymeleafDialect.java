@@ -21,12 +21,7 @@ import java.util.Set;
 
 import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.ForEachAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
 import org.lastaflute.thymeleaf.processor.expression.HandyDateExpressionProcessor;
-import org.thymeleaf.DialectConfiguration;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
 
@@ -46,16 +41,14 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected final DialectConfiguration configuration; // not null
     protected final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
     protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public LastaThymeleafDialect(DialectConfiguration configuration) {
+    public LastaThymeleafDialect() {
         super("lasta", LASTA_THYMELEAF_DIALECT_PREFIX, 1000);
-        this.configuration = configuration;
     }
 
     public LastaThymeleafDialect additionalExpression(ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper) {
@@ -78,8 +71,8 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect {
 
     protected Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
-        // TODO jflute #thymeleaf3 (2017/11/30)
-        //processors.add(createErrorsAttrProcessor());
+        processors.add(createErrorsAttrProcessor());
+        // TODO jflute #thymeleaf3 processors.add(createForEachAttrProcessor()) (2017/11/30)
         //processors.add(createForEachAttrProcessor());
         //processors.add(createOptionClsAttrProcessor());
         //processors.add(createPropertyAttrProcessor());
@@ -88,26 +81,27 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect {
     }
 
     protected ErrorsAttrProcessor createErrorsAttrProcessor() {
-        return new ErrorsAttrProcessor();
+        return new ErrorsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
     }
 
-    protected ForEachAttrProcessor createForEachAttrProcessor() {
-        return new ForEachAttrProcessor();
-    }
+    // TODO jflute #thymeleaf3 protected ForEachAttrProcessor createForEachAttrProcessor() (2017/11/30)
+    //protected ForEachAttrProcessor createForEachAttrProcessor() {
+    //    return new ForEachAttrProcessor();
+    //}
+    //
+    //protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
+    //    return new OptionClsAttrProcessor();
+    //}
+    //
+    //protected PropertyAttrProcessor createPropertyAttrProcessor() {
+    //    return new PropertyAttrProcessor();
+    //}
+    //
+    //protected TokenAttrProcessor createTokenAttrProcessor() {
+    //    return new TokenAttrProcessor();
+    //}
 
-    protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
-        return new OptionClsAttrProcessor();
-    }
-
-    protected PropertyAttrProcessor createPropertyAttrProcessor() {
-        return new PropertyAttrProcessor();
-    }
-
-    protected TokenAttrProcessor createTokenAttrProcessor() {
-        return new TokenAttrProcessor();
-    }
-
-    // TODO jflute #thymeleaf3 (2017/11/30)
+    // TODO jflute #thymeleaf3 getAdditionalExpressionObjects() (2017/11/30)
     //@Override
     //public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
     //    final Map<String, Object> processorMap = new HashMap<>();

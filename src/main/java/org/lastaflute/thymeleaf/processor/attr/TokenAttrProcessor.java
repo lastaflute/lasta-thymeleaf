@@ -15,25 +15,6 @@
  */
 package org.lastaflute.thymeleaf.processor.attr;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.dbflute.helper.message.ExceptionMessageBuilder;
-import org.lastaflute.core.util.ContainerUtil;
-import org.lastaflute.thymeleaf.processor.attr.exception.ThymeleafTokenNotHiddenTypeException;
-import org.lastaflute.thymeleaf.processor.attr.exception.ThymeleafTokenNotInputTypeException;
-import org.lastaflute.web.LastaWebKey;
-import org.lastaflute.web.ruts.process.ActionRuntime;
-import org.lastaflute.web.token.DoubleSubmitManager;
-import org.lastaflute.web.util.LaActionRuntimeUtil;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.Configuration;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.IStandardExpression;
-import org.thymeleaf.standard.expression.IStandardExpressionParser;
-import org.thymeleaf.standard.expression.StandardExpressions;
-
 /**
  * Token Attribute Processor.
  * <pre>
@@ -45,182 +26,185 @@ import org.thymeleaf.standard.expression.StandardExpressions;
  * </pre>
  * @author jflute
  */
-public class TokenAttrProcessor extends AbstractAttributeModifierAttrProcessor {
+public class TokenAttrProcessor {
 
-    // ===================================================================================
-    //                                                                          Definition
-    //                                                                          ==========
-    public static final String ATTRIBUTE_NAME = "token";
-
-    // ===================================================================================
-    //                                                                         Constructor
-    //                                                                         ===========
-    public TokenAttrProcessor() {
-        super(ATTRIBUTE_NAME);
-    }
-
-    // ===================================================================================
-    //                                                                          Implements
-    //                                                                          ==========
-    @Override
-    public int getPrecedence() {
-        return 950;
-    }
-
-    @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        final String specifiedValue = extractSpecifiedValue(arguments, element, attributeName);
-        final Map<String, String> values = new HashMap<String, String>(4);
-
-        final ActionRuntime runtime = LaActionRuntimeUtil.getActionRuntime();
-        final String tagName = element.getNormalizedName();
-        switch (tagName) {
-        case "input":
-            final String inputType = element.getAttributeValueFromNormalizedName("type");
-            if (!"hidden".equals(inputType)) {
-                throwThymeleafTokenNotHiddenTypeException(runtime, inputType);
-            }
-            if ("true".equalsIgnoreCase(specifiedValue)) { // #thinking how to remove this tag when false?
-                values.put("th:name", LastaWebKey.TRANSACTION_TOKEN_KEY);
-                values.put("th:value", prepareTransactionToken(runtime));
-            }
-            break;
-        default:
-            throwThymeleafTokenNotInputTypeException(runtime, tagName);
-        }
-        return values;
-    }
-
-    protected String extractSpecifiedValue(Arguments arguments, Element element, String attributeName) {
-        final Configuration configuration = arguments.getConfiguration();
-        final String attributeValue = element.getAttributeValue(attributeName);
-        final IStandardExpressionParser parser = StandardExpressions.getExpressionParser(configuration);
-        final IStandardExpression expression = parser.parseExpression(configuration, arguments, attributeValue);
-        return expression.execute(configuration, arguments).toString();
-    }
-
-    protected String prepareTransactionToken(ActionRuntime runtime) {
-        final String token = getDoubleSubmitManager().getSessionTokenMap().flatMap(tokenMap -> {
-            return tokenMap.get(runtime.getActionType());
-        }).orElse("none");
-        // *cannot check saveToken() call because of validation error after double-submitted
-        //final String token;
-        //if (doubleSubmitManager.isDoubleSubmittedRequest()) { // rendering after error here
-        //    token = "none"; // verified when submit by verifyToken()
-        //} else {
-        //    token = doubleSubmitManager.getSessionTokenMap().orElseThrow(() -> {
-        //        return createThymeleafSessionTokenMapNotFoundException(runtime);
-        //    }).get(runtime.getActionType()).orElseThrow(() -> { // #thinking token group setting?
-        //        return createThymeleafGroupTokenNotFoundException(runtime);
-        //    });
-        //}
-        return token;
-    }
-
-    protected DoubleSubmitManager getDoubleSubmitManager() { // #pending want to cache
-        return ContainerUtil.getComponent(DoubleSubmitManager.class);
-    }
-
-    // ===================================================================================
-    //                                                                    Exception Helper
-    //                                                                    ================
-    // *see getModifiedAttributeValues()
-    //protected RuntimeException createThymeleafSessionTokenMapNotFoundException(ActionRuntime runtime) {
-    //    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-    //    br.addNotice("Not found the session token map for the hidden token.");
-    //    br.addItem("Advice");
-    //    br.addElement("Call saveToken() in your action for the view");
-    //    br.addElement("if you use <input type=\"hidden\" la:token=\"true\"/>.");
-    //    br.addElement("For example:");
-    //    br.addElement("  (o):");
-    //    br.addElement("    public HtmlResponse index(Integer memberId) {");
-    //    br.addElement("        saveToken(); // Good");
-    //    br.addElement("        return asHtml(...);");
-    //    br.addElement("    }");
-    //    br.addElement("");
-    //    br.addElement("If that helps, you should call verifyToken() after validate()");
-    //    br.addElement("or this exception is thrown. (confirm the stack trace)");
-    //    br.addElement("For example:");
-    //    br.addElement("  (x):");
-    //    br.addElement("    public HtmlResponse update(Integer memberId) {");
-    //    br.addElement("        verifyToken(...); // *Bad: session token is deleted here");
-    //    br.addElement("        validate(form, messages -> {}, () -> { // may be this exception if validation error");
-    //    br.addElement("            return asHtml(path_...); // the html may need token...");
-    //    br.addElement("        });");
-    //    br.addElement("        ...");
-    //    br.addElement("    }");
-    //    br.addElement("  (o):");
-    //    br.addElement("    public HtmlResponse update(Integer memberId) {");
-    //    br.addElement("        validate(form, messages -> {}, () -> {");
-    //    br.addElement("            return asHtml(path_...); // session token remains");
-    //    br.addElement("        });");
-    //    br.addElement("        verifyToken(...); // Good");
-    //    br.addElement("        ...");
-    //    br.addElement("    }");
-    //    br.addItem("Action");
-    //    br.addElement(runtime);
-    //    final String msg = br.buildExceptionMessage();
-    //    return new ThymeleafSessionTokenMapNotFoundException(msg);
+    // TODO jflute #thymeleaf3 TokenAttrProcessor (2018/03/14)
+    // extends AbstractAttributeModifierAttrProcessor
+    //
+    //// ===================================================================================
+    ////                                                                          Definition
+    ////                                                                          ==========
+    //public static final String ATTRIBUTE_NAME = "token";
+    //
+    //// ===================================================================================
+    ////                                                                         Constructor
+    ////                                                                         ===========
+    //public TokenAttrProcessor() {
+    //    super(ATTRIBUTE_NAME);
     //}
     //
-    //protected RuntimeException createThymeleafGroupTokenNotFoundException(ActionRuntime runtime) {
+    //// ===================================================================================
+    ////                                                                          Implements
+    ////                                                                          ==========
+    //@Override
+    //public int getPrecedence() {
+    //    return 950;
+    //}
+    //
+    //@Override
+    //protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    //    final String specifiedValue = extractSpecifiedValue(arguments, element, attributeName);
+    //    final Map<String, String> values = new HashMap<String, String>(4);
+    //
+    //    final ActionRuntime runtime = LaActionRuntimeUtil.getActionRuntime();
+    //    final String tagName = element.getNormalizedName();
+    //    switch (tagName) {
+    //    case "input":
+    //        final String inputType = element.getAttributeValueFromNormalizedName("type");
+    //        if (!"hidden".equals(inputType)) {
+    //            throwThymeleafTokenNotHiddenTypeException(runtime, inputType);
+    //        }
+    //        if ("true".equalsIgnoreCase(specifiedValue)) { // #thinking how to remove this tag when false?
+    //            values.put("th:name", LastaWebKey.TRANSACTION_TOKEN_KEY);
+    //            values.put("th:value", prepareTransactionToken(runtime));
+    //        }
+    //        break;
+    //    default:
+    //        throwThymeleafTokenNotInputTypeException(runtime, tagName);
+    //    }
+    //    return values;
+    //}
+    //
+    //protected String extractSpecifiedValue(Arguments arguments, Element element, String attributeName) {
+    //    final Configuration configuration = arguments.getConfiguration();
+    //    final String attributeValue = element.getAttributeValue(attributeName);
+    //    final IStandardExpressionParser parser = StandardExpressions.getExpressionParser(configuration);
+    //    final IStandardExpression expression = parser.parseExpression(configuration, arguments, attributeValue);
+    //    return expression.execute(configuration, arguments).toString();
+    //}
+    //
+    //protected String prepareTransactionToken(ActionRuntime runtime) {
+    //    final String token = getDoubleSubmitManager().getSessionTokenMap().flatMap(tokenMap -> {
+    //        return tokenMap.get(runtime.getActionType());
+    //    }).orElse("none");
+    //    // *cannot check saveToken() call because of validation error after double-submitted
+    //    //final String token;
+    //    //if (doubleSubmitManager.isDoubleSubmittedRequest()) { // rendering after error here
+    //    //    token = "none"; // verified when submit by verifyToken()
+    //    //} else {
+    //    //    token = doubleSubmitManager.getSessionTokenMap().orElseThrow(() -> {
+    //    //        return createThymeleafSessionTokenMapNotFoundException(runtime);
+    //    //    }).get(runtime.getActionType()).orElseThrow(() -> { // #thinking token group setting?
+    //    //        return createThymeleafGroupTokenNotFoundException(runtime);
+    //    //    });
+    //    //}
+    //    return token;
+    //}
+    //
+    //protected DoubleSubmitManager getDoubleSubmitManager() { // #pending want to cache
+    //    return ContainerUtil.getComponent(DoubleSubmitManager.class);
+    //}
+    //
+    //// ===================================================================================
+    ////                                                                    Exception Helper
+    ////                                                                    ================
+    //// *see getModifiedAttributeValues()
+    ////protected RuntimeException createThymeleafSessionTokenMapNotFoundException(ActionRuntime runtime) {
+    ////    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+    ////    br.addNotice("Not found the session token map for the hidden token.");
+    ////    br.addItem("Advice");
+    ////    br.addElement("Call saveToken() in your action for the view");
+    ////    br.addElement("if you use <input type=\"hidden\" la:token=\"true\"/>.");
+    ////    br.addElement("For example:");
+    ////    br.addElement("  (o):");
+    ////    br.addElement("    public HtmlResponse index(Integer memberId) {");
+    ////    br.addElement("        saveToken(); // Good");
+    ////    br.addElement("        return asHtml(...);");
+    ////    br.addElement("    }");
+    ////    br.addElement("");
+    ////    br.addElement("If that helps, you should call verifyToken() after validate()");
+    ////    br.addElement("or this exception is thrown. (confirm the stack trace)");
+    ////    br.addElement("For example:");
+    ////    br.addElement("  (x):");
+    ////    br.addElement("    public HtmlResponse update(Integer memberId) {");
+    ////    br.addElement("        verifyToken(...); // *Bad: session token is deleted here");
+    ////    br.addElement("        validate(form, messages -> {}, () -> { // may be this exception if validation error");
+    ////    br.addElement("            return asHtml(path_...); // the html may need token...");
+    ////    br.addElement("        });");
+    ////    br.addElement("        ...");
+    ////    br.addElement("    }");
+    ////    br.addElement("  (o):");
+    ////    br.addElement("    public HtmlResponse update(Integer memberId) {");
+    ////    br.addElement("        validate(form, messages -> {}, () -> {");
+    ////    br.addElement("            return asHtml(path_...); // session token remains");
+    ////    br.addElement("        });");
+    ////    br.addElement("        verifyToken(...); // Good");
+    ////    br.addElement("        ...");
+    ////    br.addElement("    }");
+    ////    br.addItem("Action");
+    ////    br.addElement(runtime);
+    ////    final String msg = br.buildExceptionMessage();
+    ////    return new ThymeleafSessionTokenMapNotFoundException(msg);
+    ////}
+    ////
+    ////protected RuntimeException createThymeleafGroupTokenNotFoundException(ActionRuntime runtime) {
+    ////    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+    ////    br.addNotice("Not found the token group for the action type.");
+    ////    br.addItem("Action");
+    ////    br.addElement(runtime);
+    ////    final String msg = br.buildExceptionMessage();
+    ////    return new ThymeleafGroupTokenNotFoundException(msg);
+    ////}
+    //
+    //protected void throwThymeleafTokenNotHiddenTypeException(ActionRuntime runtime, String inputType) {
     //    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-    //    br.addNotice("Not found the token group for the action type.");
+    //    br.addNotice("Cannot use the token attribute except hidden type.");
+    //    br.addItem("Advice");
+    //    br.addElement("The la:token attribute should be used at hidden type like this:");
+    //    br.addElement("  (x):");
+    //    br.addElement("    <input type=\"text\" th:token=\"true\"/> // *Bad");
+    //    br.addElement("  (o):");
+    //    br.addElement("    <input type=\"hidden\" th:token=\"true\"/> // Good");
     //    br.addItem("Action");
     //    br.addElement(runtime);
+    //    br.addItem("Input Type");
+    //    br.addElement(inputType);
     //    final String msg = br.buildExceptionMessage();
-    //    return new ThymeleafGroupTokenNotFoundException(msg);
+    //    throw new ThymeleafTokenNotHiddenTypeException(msg);
     //}
-
-    protected void throwThymeleafTokenNotHiddenTypeException(ActionRuntime runtime, String inputType) {
-        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-        br.addNotice("Cannot use the token attribute except hidden type.");
-        br.addItem("Advice");
-        br.addElement("The la:token attribute should be used at hidden type like this:");
-        br.addElement("  (x):");
-        br.addElement("    <input type=\"text\" th:token=\"true\"/> // *Bad");
-        br.addElement("  (o):");
-        br.addElement("    <input type=\"hidden\" th:token=\"true\"/> // Good");
-        br.addItem("Action");
-        br.addElement(runtime);
-        br.addItem("Input Type");
-        br.addElement(inputType);
-        final String msg = br.buildExceptionMessage();
-        throw new ThymeleafTokenNotHiddenTypeException(msg);
-    }
-
-    protected void throwThymeleafTokenNotInputTypeException(ActionRuntime runtime, String tagName) {
-        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-        br.addNotice("Cannot use the token attribute except input tag.");
-        br.addItem("Advice");
-        br.addElement("The la:token attribute should be used at input type like this:");
-        br.addElement("  (x):");
-        br.addElement("    <form th:action=\"...\" th:token=\"true\"/> // *Bad");
-        br.addElement("  (o):");
-        br.addElement("    <input type=\"hidden\" th:token=\"true\"/> // Good");
-        br.addItem("Action");
-        br.addElement(runtime);
-        br.addItem("Tag Name");
-        br.addElement(tagName);
-        final String msg = br.buildExceptionMessage();
-        throw new ThymeleafTokenNotInputTypeException(msg);
-    }
-
-    // ===================================================================================
-    //                                                                     Option Override
-    //                                                                     ===============
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return true;
-    }
+    //
+    //protected void throwThymeleafTokenNotInputTypeException(ActionRuntime runtime, String tagName) {
+    //    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+    //    br.addNotice("Cannot use the token attribute except input tag.");
+    //    br.addItem("Advice");
+    //    br.addElement("The la:token attribute should be used at input type like this:");
+    //    br.addElement("  (x):");
+    //    br.addElement("    <form th:action=\"...\" th:token=\"true\"/> // *Bad");
+    //    br.addElement("  (o):");
+    //    br.addElement("    <input type=\"hidden\" th:token=\"true\"/> // Good");
+    //    br.addItem("Action");
+    //    br.addElement(runtime);
+    //    br.addItem("Tag Name");
+    //    br.addElement(tagName);
+    //    final String msg = br.buildExceptionMessage();
+    //    throw new ThymeleafTokenNotInputTypeException(msg);
+    //}
+    //
+    //// ===================================================================================
+    ////                                                                     Option Override
+    ////                                                                     ===============
+    //@Override
+    //protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
+    //    return ModificationType.SUBSTITUTION;
+    //}
+    //
+    //@Override
+    //protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
+    //    return true;
+    //}
+    //
+    //@Override
+    //protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
+    //    return true;
+    //}
 }

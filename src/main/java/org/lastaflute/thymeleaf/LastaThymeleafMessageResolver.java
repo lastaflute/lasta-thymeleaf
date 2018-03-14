@@ -19,29 +19,29 @@ import java.util.Locale;
 
 import org.lastaflute.core.message.MessageManager;
 import org.lastaflute.core.util.ContainerUtil;
-import org.thymeleaf.Arguments;
+import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.messageresolver.AbstractMessageResolver;
-import org.thymeleaf.messageresolver.MessageResolution;
 
 /**
- * @author schatten
  * @author jflute
  */
 public class LastaThymeleafMessageResolver extends AbstractMessageResolver {
 
-    protected MessageManager messageManager;
+    protected final MessageManager messageManager;
 
-    @Override
-    protected void initializeSpecific() {
+    public LastaThymeleafMessageResolver() {
         messageManager = ContainerUtil.getComponent(MessageManager.class);
     }
 
     @Override
-    public MessageResolution resolveMessage(Arguments arguments, String key, Object[] messageParameters) {
-        checkInitialized();
-        final Locale locale = arguments.getContext().getLocale(); // #thinking requestManager.getUserLocale()?
-        return messageManager.findMessage(locale, key, messageParameters).map(message -> {
-            return new MessageResolution(message);
-        }).orElse(null);
+    public String resolveMessage(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
+        final Locale locale = context.getLocale(); // #thinking should use requestManager.getUserLocale()? by jflute
+        return messageManager.findMessage(locale, key, messageParameters).orElse(null);
+    }
+
+    @Override
+    public String createAbsentMessageRepresentation(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
+        // #thinking what should I do? by jflute
+        return null;
     }
 }
