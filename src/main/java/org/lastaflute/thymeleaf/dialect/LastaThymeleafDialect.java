@@ -13,16 +13,24 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor;
+package org.lastaflute.thymeleaf.dialect;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.dbflute.util.DfCollectionUtil;
+import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionResource;
 import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
+import org.lastaflute.thymeleaf.expression.ClassificationExpressionObject;
+import org.lastaflute.thymeleaf.expression.HandyDateExpressionObject;
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
-import org.lastaflute.thymeleaf.processor.expression.HandyDateExpressionProcessor;
+import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
+import org.thymeleaf.dialect.IExpressionObjectDialect;
+import org.thymeleaf.expression.IExpressionObjectFactory;
 import org.thymeleaf.processor.IProcessor;
 
 /**
@@ -30,18 +38,26 @@ import org.thymeleaf.processor.IProcessor;
  * @author schatten
  * @author jflute
  */
-public class LastaThymeleafDialect extends AbstractProcessorDialect {
+public class LastaThymeleafDialect extends AbstractProcessorDialect implements IExpressionObjectDialect {
 
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
     public static final String LASTA_THYMELEAF_DIALECT_PREFIX = "la";
-    protected static final HandyDateExpressionProcessor HANDY_DATE_EXPRESSION_PROCESSOR = new HandyDateExpressionProcessor();
+
+    protected static final String EXPRESSION_OBJECT_CLASSIFICATION = "cls";
+    protected static final String EXPRESSION_OBJECT_HANDY = "handy";
+    protected static final Set<String> allExpressionObjectNames;
+    static {
+        allExpressionObjectNames = DfCollectionUtil.newHashSet(EXPRESSION_OBJECT_CLASSIFICATION, EXPRESSION_OBJECT_HANDY);
+    }
+    protected static final HandyDateExpressionObject HANDY_DATE_EXPRESSION_OBJECT = new HandyDateExpressionObject();
 
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
     protected final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
+    protected final LastaExpressionObjectFactory expressionObjectFactory = new LastaExpressionObjectFactory();
     protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
 
     // ===================================================================================
@@ -101,33 +117,58 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect {
     //    return new TokenAttrProcessor();
     //}
 
-    // TODO jflute #thymeleaf3 getAdditionalExpressionObjects() (2017/11/30)
-    //@Override
-    //public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
-    //    final Map<String, Object> processorMap = new HashMap<>();
-    //    processorMap.put("handy", HANDY_DATE_EXPRESSION_PROCESSOR); // stateless so recycle
-    //    processorMap.put("cls", createClassificationExpressionProcessor(processingContext));
-    //    if (additionalExpressionSetupper != null) {
-    //        final ThymeleafAdditionalExpressionResource resource = createThymeleafCustomExpressionResource(processingContext);
-    //        additionalExpressionSetupper.setup(resource);
-    //        resource.getProcessorMap().forEach((key, processor) -> {
-    //            if (processorMap.containsKey(key)) {
-    //                String msg = "The processor key already exists in processor map: " + key + ", " + processorMap.keySet();
-    //                throw new IllegalStateException(msg);
-    //            }
-    //            processorMap.put(key, processor);
-    //        });
-    //    }
-    //    return processorMap;
-    //}
-    //
-    //protected ClassificationExpressionProcessor createClassificationExpressionProcessor(IProcessingContext processingContext) {
-    //    return new ClassificationExpressionProcessor(processingContext);
-    //}
-    //
-    //protected ThymeleafAdditionalExpressionResource createThymeleafCustomExpressionResource(IProcessingContext processingContext) {
-    //    return new ThymeleafAdditionalExpressionResource(processingContext);
-    //}
+    @Override
+    public IExpressionObjectFactory getExpressionObjectFactory() {
+        return expressionObjectFactory;
+    }
+
+    public class LastaExpressionObjectFactory implements IExpressionObjectFactory {
+
+        @Override
+        public Set<String> getAllExpressionObjectNames() {
+            return allExpressionObjectNames;
+        }
+
+        @Override
+        public Object buildObject(IExpressionContext context, String expressionObjectName) {
+            if ("cls".equals(expressionObjectName)) {
+                return createClassificationExpressionObject(context);
+            } else if ("handy".equals(expressionObjectName)) {
+                return HANDY_DATE_EXPRESSION_OBJECT;
+            }
+            // #for_now may need to improve performance? by jflute
+            final Map<String, Object> processorMap = new HashMap<>();
+            if (additionalExpressionSetupper != null) {
+                final ThymeleafAdditionalExpressionResource resource = createThymeleafCustomExpressionResource(context);
+                additionalExpressionSetupper.setup(resource);
+                resource.getExpressionObjectMap().forEach((key, processor) -> {
+                    if (processorMap.containsKey(key)) {
+                        String msg = "The processor key already exists in processor map: " + key + ", " + processorMap.keySet();
+                        throw new IllegalStateException(msg);
+                    }
+                    processorMap.put(key, processor);
+                });
+            }
+            final Object additionalObject = processorMap.get(expressionObjectName);
+            if (additionalObject != null) {
+                return additionalObject;
+            }
+            return null;
+        }
+
+        @Override
+        public boolean isCacheable(String expressionObjectName) {
+            return false; // #thinking all right? by jflute
+        }
+    }
+
+    protected ClassificationExpressionObject createClassificationExpressionObject(IExpressionContext context) {
+        return new ClassificationExpressionObject(context);
+    }
+
+    protected ThymeleafAdditionalExpressionResource createThymeleafCustomExpressionResource(IExpressionContext context) {
+        return new ThymeleafAdditionalExpressionResource(context);
+    }
 
     // ===================================================================================
     //                                                                            Accessor

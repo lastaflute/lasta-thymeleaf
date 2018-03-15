@@ -34,7 +34,7 @@ import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyConflictingWithRegisteredDataException;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyUsingReservedWordException;
 import org.lastaflute.thymeleaf.exception.ThymeleafResisteredDataUsingReservedWordException;
-import org.lastaflute.thymeleaf.messages.ErrorMessages;
+import org.lastaflute.thymeleaf.message.ErrorMessages;
 import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.exception.RequestForwardFailureException;
 import org.lastaflute.web.ruts.NextJourney;

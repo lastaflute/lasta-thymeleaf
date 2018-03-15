@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf;
+package org.lastaflute.thymeleaf.message.resolver;
 
 import java.util.Locale;
 
@@ -25,11 +25,11 @@ import org.thymeleaf.messageresolver.AbstractMessageResolver;
 /**
  * @author jflute
  */
-public class LastaThymeleafMessageResolver extends AbstractMessageResolver {
+public class ManagedMessageResolver extends AbstractMessageResolver {
 
     protected final MessageManager messageManager;
 
-    public LastaThymeleafMessageResolver() {
+    public ManagedMessageResolver() {
         messageManager = ContainerUtil.getComponent(MessageManager.class);
     }
 

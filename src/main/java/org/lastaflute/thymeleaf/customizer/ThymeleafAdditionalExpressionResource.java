@@ -15,41 +15,46 @@
  */
 package org.lastaflute.thymeleaf.customizer;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.thymeleaf.context.IExpressionContext;
+
 /**
  * @author jflute
  * @since 0.3.0 (2017/03/22 Wednesday)
  */
 public class ThymeleafAdditionalExpressionResource {
 
-    // TODO jflute #thymeleaf3 ThymeleafAdditionalExpressionResource (2018/03/14)
-    //// ===================================================================================
-    ////                                                                           Attribute
-    ////                                                                           =========
-    //protected final IProcessingContext processingContext;
-    //protected final Map<String, Object> processorMap = new LinkedHashMap<String, Object>();
-    //
-    //// ===================================================================================
-    ////                                                                         Constructor
-    ////                                                                         ===========
-    //public ThymeleafAdditionalExpressionResource(IProcessingContext processingContext) {
-    //    this.processingContext = processingContext;
-    //}
-    //
-    //// ===================================================================================
-    ////                                                                            Register
-    ////                                                                            ========
-    //public void registerProcessor(String key, Object processor) {
-    //    processorMap.put(key, processor);
-    //}
-    //
-    //// ===================================================================================
-    ////                                                                            Accessor
-    ////                                                                            ========
-    //public IProcessingContext getProcessingContext() {
-    //    return processingContext;
-    //}
-    //
-    //public Map<String, Object> getProcessorMap() {
-    //    return Collections.unmodifiableMap(processorMap);
-    //}
+    // ===================================================================================
+    //                                                                           Attribute
+    //                                                                           =========
+    protected final IExpressionContext expressionContext;
+    protected final Map<String, Object> expressionObjectMap = new LinkedHashMap<String, Object>();
+
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
+    public ThymeleafAdditionalExpressionResource(IExpressionContext expressionContext) {
+        this.expressionContext = expressionContext;
+    }
+
+    // ===================================================================================
+    //                                                                            Register
+    //                                                                            ========
+    public void registerExpressionObject(String key, Object expressionObject) {
+        expressionObjectMap.put(key, expressionObject);
+    }
+
+    // ===================================================================================
+    //                                                                            Accessor
+    //                                                                            ========
+    public IExpressionContext getExpressionContext() {
+        return expressionContext;
+    }
+
+    public Map<String, Object> getExpressionObjectMap() {
+        return Collections.unmodifiableMap(expressionObjectMap);
+    }
 }

@@ -16,8 +16,9 @@
 package org.lastaflute.thymeleaf;
 
 import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
-import org.lastaflute.thymeleaf.processor.LastaThymeleafDialect;
-import org.lastaflute.thymeleaf.processor.LastaThymeleafMistakeDialect;
+import org.lastaflute.thymeleaf.dialect.LastaThymeleafDialect;
+import org.lastaflute.thymeleaf.dialect.LastaThymeleafMistakeDialect;
+import org.lastaflute.thymeleaf.message.resolver.ManagedMessageResolver;
 import org.lastaflute.web.response.HtmlResponse;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.process.ActionRuntime;
@@ -166,14 +167,14 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         return resolver;
     }
 
-    protected LastaThymeleafMessageResolver createLastaThymeleafMessageResolver() {
-        final LastaThymeleafMessageResolver resolver = newLastaThymeleafMessageResolver();
+    protected ManagedMessageResolver createLastaThymeleafMessageResolver() {
+        final ManagedMessageResolver resolver = newLastaThymeleafMessageResolver();
         resolver.setOrder(10);
         return resolver;
     }
 
-    protected LastaThymeleafMessageResolver newLastaThymeleafMessageResolver() {
-        return new LastaThymeleafMessageResolver();
+    protected ManagedMessageResolver newLastaThymeleafMessageResolver() {
+        return new ManagedMessageResolver();
     }
 
     // -----------------------------------------------------

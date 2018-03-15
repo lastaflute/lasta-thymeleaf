@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor;
+package org.lastaflute.thymeleaf.dialect;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
