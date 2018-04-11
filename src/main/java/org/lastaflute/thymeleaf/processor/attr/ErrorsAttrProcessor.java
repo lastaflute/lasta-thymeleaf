@@ -45,7 +45,7 @@ public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagP
     public static final String ATTR_NAME = "errors"; // e.g. la:errors="sea"
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
-    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking by jflute
+    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
 
     // -----------------------------------------------------
     //                                      Changeable Value
@@ -111,13 +111,14 @@ public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagP
     // ===================================================================================
     //                                                                     Option Override
     //                                                                     ===============
-    // #thinking by jflute
+    // done, cannot select it in this super class, default is SUBSTITUTION... by jflute (2018/04/11)
+    // but la:errors may not be related to modification type so out of migration target
     //@Override
     //protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
     //    return ModificationType.SUBSTITUTION;
     //}
 
-    // #thinking by jflute
+    // #thinking what is recompute? by jflute
     //@Override
     //protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
     //    return true;
