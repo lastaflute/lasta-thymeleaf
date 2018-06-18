@@ -54,12 +54,18 @@ public class ResolvedMessage implements Serializable {
      * @return The resolved message about message resources. (NotNull)
      */
     public String getMessage() { // called by thymeleaf templates e.g. th:text="${er.message}"
+        final String messageKey = message.getMessageKey();
         if (message.isResource()) {
             final Locale locale = requestManager.getUserLocale();
             final MessageManager messageManager = requestManager.getMessageManager();
-            return messageManager.getMessage(locale, message.getMessageKey());
+            final Object[] values = message.getValues();
+            if (values != null && values.length > 0) {
+                return messageManager.getMessage(locale, messageKey, values);
+            } else {
+                return messageManager.getMessage(locale, messageKey);
+            }
         } else {
-            return message.getMessageKey();
+            return messageKey;
         }
     }
 }
