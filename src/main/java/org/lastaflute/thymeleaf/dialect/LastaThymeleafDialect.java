@@ -27,6 +27,7 @@ import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper
 import org.lastaflute.thymeleaf.expression.ClassificationExpressionObject;
 import org.lastaflute.thymeleaf.expression.HandyDateExpressionObject;
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.dialect.IExpressionObjectDialect;
@@ -88,16 +89,20 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     protected Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
         processors.add(createErrorsAttrProcessor());
+        processors.add(createPropertyAttrProcessor());
         // TODO jflute #thymeleaf3 processors.add(createForEachAttrProcessor()) (2017/11/30)
         //processors.add(createForEachAttrProcessor());
         //processors.add(createOptionClsAttrProcessor());
-        //processors.add(createPropertyAttrProcessor());
         //processors.add(createTokenAttrProcessor());
         return processors;
     }
 
     protected ErrorsAttrProcessor createErrorsAttrProcessor() {
         return new ErrorsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
+    }
+
+    protected PropertyAttrProcessor createPropertyAttrProcessor() {
+        return new PropertyAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
     }
 
     // TODO jflute #thymeleaf3 protected ForEachAttrProcessor createForEachAttrProcessor() (2017/11/30)
@@ -109,9 +114,6 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     //    return new OptionClsAttrProcessor();
     //}
     //
-    //protected PropertyAttrProcessor createPropertyAttrProcessor() {
-    //    return new PropertyAttrProcessor();
-    //}
     //
     //protected TokenAttrProcessor createTokenAttrProcessor() {
     //    return new TokenAttrProcessor();

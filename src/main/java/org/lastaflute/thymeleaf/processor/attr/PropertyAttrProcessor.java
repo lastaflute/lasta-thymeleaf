@@ -15,6 +15,14 @@
  */
 package org.lastaflute.thymeleaf.processor.attr;
 
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.StandardDialect;
+import org.thymeleaf.standard.processor.AbstractStandardExpressionAttributeTagProcessor;
+import org.thymeleaf.templatemode.TemplateMode;
+
 /**
  * Property Attribute Processor.
  * <pre>
@@ -30,142 +38,71 @@ package org.lastaflute.thymeleaf.processor.attr;
  * @author schatten
  * @author jflute
  */
-public class PropertyAttrProcessor {
+public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTagProcessor {
 
-    // TODO jflute #thymeleaf3 PropertyAttrProcessor (2018/03/14)
-    // extends AbstractAttributeModifierAttrProcessor
-    //
-    //// ===================================================================================
-    ////                                                                          Definition
-    ////                                                                          ==========
-    //public static final String ATTRIBUTE_NAME = "property";
-    //private static final String APPEND_ERROR_STYLE_CLASS = "${errors.exists('%s')} ? 'validError'";
-    //private static final String APPEND_ERROR_STYLE_CLASS_ATTRAPEND = "class=(${errors.exists('%s')} ? ' validError')";
-    //
-    //protected static final String SELECT_PROPERTY_NAME = "la:selectPropertyName";
-    //
-    //// ===================================================================================
-    ////                                                                         Constructor
-    ////                                                                         ===========
-    //public PropertyAttrProcessor() {
-    //    super(ATTRIBUTE_NAME);
-    //}
-    //
-    //// ===================================================================================
-    ////                                                                          Implements
-    ////                                                                          ==========
-    ///**
-    // * {@inheritDoc}
-    // * @see org.thymeleaf.processor.AbstractProcessor#getPrecedence()
-    // */
-    //@Override
-    //public int getPrecedence() {
-    //    return 950;
-    //}
-    //
-    ///**
-    // * {@inheritDoc}
-    // * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModifiedAttributeValues(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
-    // */
-    //@Override
-    //protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-    //    final Configuration configuration = arguments.getConfiguration();
-    //
-    //    // Obtain the attribute value
-    //    final String attributeValue = element.getAttributeValue(attributeName);
-    //
-    //    boolean hasThName = element.hasNormalizedAttribute(StandardDialect.PREFIX, "name");
-    //    boolean hasThText = element.hasNormalizedAttribute(StandardDialect.PREFIX, "text");
-    //    boolean hasThValue = element.hasNormalizedAttribute(StandardDialect.PREFIX, "value");
-    //    boolean hasThClassAppend = element.hasNormalizedAttribute(StandardDialect.PREFIX, "classappend");
-    //    boolean hasThAttrAppend = element.hasNormalizedAttribute(StandardDialect.PREFIX, "attrappend");
-    //
-    //    // Obtain the Thymeleaf Standard Expression parser
-    //    final IStandardExpressionParser parser = StandardExpressions.getExpressionParser(configuration);
-    //
-    //    // Parse the attribute value as a Thymeleaf Standard Expression
-    //    final IStandardExpression expression = parser.parseExpression(configuration, arguments, attributeValue);
-    //
-    //    String propertyName = expression.execute(configuration, arguments).toString();
-    //    final Map<String, String> values = new HashMap<String, String>();
-    //    String propertyFieldName = getPropertyFieldName(arguments, element, configuration, propertyName);
-    //    switch (element.getNormalizedName()) {
-    //    case "input":
-    //        if (!hasThName) {
-    //            values.put("th:name", propertyFieldName);
-    //        }
-    //        if (!hasThValue) {
-    //            String type = element.getAttributeValueFromNormalizedName("type");
-    //            if (!("checkbox".equals(type) || "radio".equals(type))) {
-    //                values.put("th:value", "${" + propertyName + "}");
-    //            }
-    //        }
-    //        break;
-    //    case "select":
-    //        if (!hasThName) {
-    //            values.put("th:name", propertyFieldName);
-    //        }
-    //        element.setNodeProperty(SELECT_PROPERTY_NAME, propertyName);
-    //        break;
-    //    case "textarea":
-    //        if (!hasThName) {
-    //            values.put("th:name", propertyFieldName);
-    //        }
-    //        // not break.
-    //    default:
-    //        if (!hasThText) {
-    //            values.put("th:text", "${" + propertyName + "}");
-    //        }
-    //        break;
-    //    }
-    //    if (!hasThClassAppend) {
-    //        values.put("th:classappend", String.format(APPEND_ERROR_STYLE_CLASS, propertyFieldName));
-    //    } else if (!hasThAttrAppend) {
-    //        values.put("th:attrappend", String.format(APPEND_ERROR_STYLE_CLASS_ATTRAPEND, propertyFieldName));
-    //    }
-    //
-    //    return values;
-    //}
-    //
-    //protected String getPropertyFieldName(Arguments arguments, Element element, final Configuration configuration, final String name) {
-    //    if (arguments.hasLocalVariable(ForEachAttrProcessor.FORM_PROPERTY_PATH_VER)) {
-    //        String formName = (String) arguments.getLocalVariable(ForEachAttrProcessor.FORM_PROPERTY_PATH_VER) + ".";
-    //        int indexOf = name.indexOf(".");
-    //        if (indexOf < 0) {
-    //            formName += name;
-    //        } else {
-    //            formName += name.substring(indexOf + 1);
-    //        }
-    //        return formName;
-    //    }
-    //
-    //    return name;
-    //}
-    //
-    ///**
-    // * {@inheritDoc}
-    // * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#getModificationType(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
-    // */
-    //@Override
-    //protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-    //    return ModificationType.SUBSTITUTION;
-    //}
-    //
-    ///**
-    // * {@inheritDoc}
-    // * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#removeAttributeIfEmpty(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String, java.lang.String)
-    // */
-    //@Override
-    //protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-    //    return true;
-    //}
-    //
-    ///**
-    // * {@inheritDoc}
-    // * @see org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor#recomputeProcessorsAfterExecution(org.thymeleaf.Arguments, org.thymeleaf.dom.Element, java.lang.String)
-    // */
-    //@Override
-    //protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-    //    return true;
-    //}
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
+    public static final String ATTR_NAME = "property";
+    public static final int PRECEDENCE = 950;
+    public static final boolean REMOVE_ATTRIBUTE = true;
+    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
+
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
+    public PropertyAttrProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, RESTRICTED_EXPRESSION_EXECUTION);
+    }
+
+    // ===================================================================================
+    //                                                                          Implements
+    //                                                                          ==========
+    @Override
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
+            Object expressionResult, IElementTagStructureHandler structureHandler) {
+        // #thinking nest property. by p1us2er0 (2018/09/04)
+        final String propertyName = expressionResult.toString();
+        boolean hasThName = tag.hasAttribute(StandardDialect.PREFIX, "name");
+        boolean hasThText = tag.hasAttribute(StandardDialect.PREFIX, "text");
+        boolean hasThValue = tag.hasAttribute(StandardDialect.PREFIX, "value");
+
+        if (!hasThName) {
+            structureHandler.setAttribute("th:name", propertyName);
+        }
+
+        switch (tag.getElementCompleteName()) {
+        case "input":
+            if (!hasThName) {
+                structureHandler.setAttribute("th:name", propertyName);
+            }
+            if (!hasThValue) {
+                String type = tag.getAttributeValue("type");
+                if (!("checkbox".equals(type) || "radio".equals(type))) {
+                    structureHandler.setAttribute("th:value", "${" + propertyName + "}");
+                }
+            }
+            break;
+        case "select":
+            if (!hasThName) {
+                structureHandler.setAttribute("th:name", propertyName);
+            }
+            // #thinking organize. by p1us2er0 (2018/09/04)
+            //element.setNodeProperty(SELECT_PROPERTY_NAME, propertyName);
+            break;
+        case "textarea":
+            if (!hasThName) {
+                structureHandler.setAttribute("th:name", propertyName);
+            }
+            if (!hasThText) {
+                structureHandler.setAttribute("th:text", "${" + propertyName + "}");
+            }
+            break;
+        default:
+            if (!hasThText) {
+                structureHandler.setAttribute("th:text", "${" + propertyName + "}");
+            }
+            break;
+        }
+    }
 }

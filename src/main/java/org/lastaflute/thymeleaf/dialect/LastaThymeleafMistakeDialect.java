@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.MistakeAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.processor.IProcessor;
 
@@ -51,11 +52,11 @@ public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
     protected Set<IProcessor> createLastaProcessorsSet() {
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
         processors.add(createMistakeAttrProcessor(ErrorsAttrProcessor.ATTR_NAME));
+        processors.add(createMistakeAttrProcessor(PropertyAttrProcessor.ATTR_NAME));
 
         // TODO jflute #thymeleaf3 processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME)) (2018/03/14)
         //processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME));
         //processors.add(newMistakeAttrProcessor(OptionClsAttrProcessor.ATTRIBUTE_NAME));
-        //processors.add(newMistakeAttrProcessor(PropertyAttrProcessor.ATTRIBUTE_NAME));
         //processors.add(newMistakeAttrProcessor(TokenAttrProcessor.ATTRIBUTE_NAME));
         return processors;
     }
