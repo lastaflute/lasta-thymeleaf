@@ -47,6 +47,7 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
     public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
+    protected static final String SELECT_PROPERTY_NAME = "la:selectPropertyName";
 
     // ===================================================================================
     //                                                                         Constructor

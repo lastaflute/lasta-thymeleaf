@@ -27,6 +27,7 @@ import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper
 import org.lastaflute.thymeleaf.expression.ClassificationExpressionObject;
 import org.lastaflute.thymeleaf.expression.HandyDateExpressionObject;
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
@@ -90,9 +91,9 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
         processors.add(createErrorsAttrProcessor());
         processors.add(createPropertyAttrProcessor());
+        processors.add(createOptionClsAttrProcessor());
         // TODO jflute #thymeleaf3 processors.add(createForEachAttrProcessor()) (2017/11/30)
         //processors.add(createForEachAttrProcessor());
-        //processors.add(createOptionClsAttrProcessor());
         //processors.add(createTokenAttrProcessor());
         return processors;
     }
@@ -105,15 +106,14 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         return new PropertyAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
     }
 
+    protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
+        return new OptionClsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
+    }
+
     // TODO jflute #thymeleaf3 protected ForEachAttrProcessor createForEachAttrProcessor() (2017/11/30)
     //protected ForEachAttrProcessor createForEachAttrProcessor() {
     //    return new ForEachAttrProcessor();
     //}
-    //
-    //protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
-    //    return new OptionClsAttrProcessor();
-    //}
-    //
     //
     //protected TokenAttrProcessor createTokenAttrProcessor() {
     //    return new TokenAttrProcessor();

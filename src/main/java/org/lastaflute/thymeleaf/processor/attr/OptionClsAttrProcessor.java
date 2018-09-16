@@ -15,6 +15,13 @@
  */
 package org.lastaflute.thymeleaf.processor.attr;
 
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.processor.AbstractStandardExpressionAttributeTagProcessor;
+import org.thymeleaf.templatemode.TemplateMode;
+
 /**
  * Processor for Option Attribute of Select Tag with Classification Definition.
  * <pre>
@@ -55,7 +62,35 @@ package org.lastaflute.thymeleaf.processor.attr;
  * @author schatten
  * @author jflute
  */
-public class OptionClsAttrProcessor {
+public class OptionClsAttrProcessor extends AbstractStandardExpressionAttributeTagProcessor {
+
+    // ===================================================================================
+    //                                                                          Definition
+    //                                                                          ==========
+    public static final String ATTR_NAME = "optionCls";
+    public static final int PRECEDENCE = 200;
+    public static final boolean REMOVE_ATTRIBUTE = true;
+    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
+
+    // ===================================================================================
+    //                                                                         Constructor
+    //                                                                         ===========
+    public OptionClsAttrProcessor(String dialectPrefix) {
+        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, RESTRICTED_EXPRESSION_EXECUTION);
+    }
+
+    // ===================================================================================
+    //                                                                          Implements
+    //                                                                          ==========
+    @Override
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
+            Object expressionResult, IElementTagStructureHandler structureHandler) {
+        final String propertyName = expressionResult.toString();
+        structureHandler.setAttribute("th:each", String.format("cdef : ${#cls.listAll('%s')}", propertyName));
+        structureHandler.setAttribute("th:value", "${cdef.code()}");
+        structureHandler.setAttribute("th:text", "${cdef.alias()}");
+        structureHandler.setAttribute("th:selected", "${cdef} == ${status}");
+    }
 
     // TODO jflute #thymeleaf3 OptionClsAttrProcessor (2018/03/14)
     // extends AbstractAttributeModifierAttrProcessor
