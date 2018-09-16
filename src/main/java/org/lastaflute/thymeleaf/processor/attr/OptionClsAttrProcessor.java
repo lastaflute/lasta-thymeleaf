@@ -15,12 +15,15 @@
  */
 package org.lastaflute.thymeleaf.processor.attr;
 
+import java.util.List;
+
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.engine.AttributeName;
 import org.thymeleaf.model.IProcessableElementTag;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
 import org.thymeleaf.standard.processor.AbstractStandardExpressionAttributeTagProcessor;
 import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.util.StringUtils;
 
 /**
  * Processor for Option Attribute of Select Tag with Classification Definition.
@@ -85,11 +88,19 @@ public class OptionClsAttrProcessor extends AbstractStandardExpressionAttributeT
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
             Object expressionResult, IElementTagStructureHandler structureHandler) {
-        final String propertyName = expressionResult.toString();
-        structureHandler.setAttribute("th:each", String.format("cdef : ${#cls.listAll('%s')}", propertyName));
+        final String optionClsName = expressionResult.toString();
+        structureHandler.setAttribute("th:each", String.format("cdef : ${#cls.listAll('%s')}", optionClsName));
         structureHandler.setAttribute("th:value", "${cdef.code()}");
         structureHandler.setAttribute("th:text", "${cdef.alias()}");
-        structureHandler.setAttribute("th:selected", "${cdef} == ${status}");
+
+        List<IProcessableElementTag> elementStack = context.getElementStack();
+        if (elementStack.size() >= 2) {
+            IProcessableElementTag parentTag = elementStack.get(elementStack.size() - 2);
+            String propertyName = parentTag.getAttributeValue(getDialectPrefix(), "property");
+            if (!StringUtils.isEmpty(propertyName)) {
+                structureHandler.setAttribute("th:selected", String.format("${cdef} == ${%s}", propertyName));
+            }
+        }
     }
 
     // TODO jflute #thymeleaf3 OptionClsAttrProcessor (2018/03/14)

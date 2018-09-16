@@ -47,7 +47,6 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
     public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
-    protected static final String SELECT_PROPERTY_NAME = "la:selectPropertyName";
 
     // ===================================================================================
     //                                                                         Constructor
@@ -88,8 +87,6 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
             if (!hasThName) {
                 structureHandler.setAttribute("th:name", propertyName);
             }
-            // #thinking organize. by p1us2er0 (2018/09/04)
-            //element.setNodeProperty(SELECT_PROPERTY_NAME, propertyName);
             break;
         case "textarea":
             if (!hasThName) {
