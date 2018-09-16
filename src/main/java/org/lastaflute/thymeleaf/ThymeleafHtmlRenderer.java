@@ -116,7 +116,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         final HttpServletRequest request = requestManager.getRequest();
         final HttpServletResponse response = requestManager.getResponseManager().getResponse();
         final ServletContext servletContext = request.getServletContext();
-        final Locale locale = request.getLocale();
+        final Locale locale = requestManager.getUserLocale();
         return new WebContext(request, response, servletContext, locale);
     }
 

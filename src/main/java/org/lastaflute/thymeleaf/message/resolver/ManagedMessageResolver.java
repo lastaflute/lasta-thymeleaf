@@ -35,13 +35,13 @@ public class ManagedMessageResolver extends AbstractMessageResolver {
 
     @Override
     public String resolveMessage(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
-        final Locale locale = context.getLocale(); // #thinking should use requestManager.getUserLocale()? by jflute
+        final Locale locale = context.getLocale(); // #thinking is the same as requestManager's user locacle? by jflute (2018/09/17)
         return messageManager.findMessage(locale, key, messageParameters).orElse(null);
     }
 
     @Override
     public String createAbsentMessageRepresentation(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
-        // #thinking what should I do? by jflute
+        // #thinking #thymeleaf3 what should I do? by jflute
         return null;
     }
 }
