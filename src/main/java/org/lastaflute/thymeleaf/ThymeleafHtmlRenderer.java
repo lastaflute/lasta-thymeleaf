@@ -52,6 +52,7 @@ import org.thymeleaf.context.WebContext;
 /**
  * @author jflute
  * @author schatten
+ * @author Toshi504
  */
 public class ThymeleafHtmlRenderer implements HtmlRenderer {
 

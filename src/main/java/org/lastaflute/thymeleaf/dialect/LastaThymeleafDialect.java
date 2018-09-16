@@ -39,6 +39,7 @@ import org.thymeleaf.processor.IProcessor;
  * Lasta Thymeleaf Dialect.
  * @author schatten
  * @author jflute
+ * @author p1us2er0
  */
 public class LastaThymeleafDialect extends AbstractProcessorDialect implements IExpressionObjectDialect {
 

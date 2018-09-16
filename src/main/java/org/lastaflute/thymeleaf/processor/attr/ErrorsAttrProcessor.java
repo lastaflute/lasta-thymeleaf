@@ -33,6 +33,7 @@ import org.thymeleaf.templatemode.TemplateMode;
  *   &lt;span class="errors"&gt;<b>is required</b>&lt;/span&gt;
  * </pre>
  * @author jflute
+ * @author p1us2er0
  */
 public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagProcessor {
 

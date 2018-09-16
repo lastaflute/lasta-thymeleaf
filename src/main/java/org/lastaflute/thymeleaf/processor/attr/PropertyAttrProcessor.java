@@ -37,6 +37,7 @@ import org.thymeleaf.templatemode.TemplateMode;
  * </pre>
  * @author schatten
  * @author jflute
+ * @author p1us2er0
  */
 public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTagProcessor {
 

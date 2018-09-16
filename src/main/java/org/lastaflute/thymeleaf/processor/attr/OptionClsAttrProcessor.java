@@ -64,6 +64,7 @@ import org.thymeleaf.util.StringUtils;
  * </pre>
  * @author schatten
  * @author jflute
+ * @author p1us2er0
  */
 public class OptionClsAttrProcessor extends AbstractStandardExpressionAttributeTagProcessor {
 
