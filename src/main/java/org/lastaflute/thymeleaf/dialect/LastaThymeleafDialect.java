@@ -92,8 +92,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         processors.add(createErrorsAttrProcessor());
         processors.add(createPropertyAttrProcessor());
         processors.add(createOptionClsAttrProcessor());
-        // TODO jflute #thymeleaf3 processors.add(createForEachAttrProcessor()) (2017/11/30)
-        //processors.add(createForEachAttrProcessor());
+        // TODO jflute #thymeleaf3 pri.B processors.add(createTokenAttrProcessor()) (2017/11/30)
         //processors.add(createTokenAttrProcessor());
         return processors;
     }
@@ -110,11 +109,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         return new OptionClsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
     }
 
-    // TODO jflute #thymeleaf3 protected ForEachAttrProcessor createForEachAttrProcessor() (2017/11/30)
-    //protected ForEachAttrProcessor createForEachAttrProcessor() {
-    //    return new ForEachAttrProcessor();
-    //}
-    //
+    // migrating now
     //protected TokenAttrProcessor createTokenAttrProcessor() {
     //    return new TokenAttrProcessor();
     //}

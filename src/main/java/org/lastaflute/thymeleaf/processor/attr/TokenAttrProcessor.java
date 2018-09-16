@@ -28,7 +28,7 @@ package org.lastaflute.thymeleaf.processor.attr;
  */
 public class TokenAttrProcessor {
 
-    // TODO jflute #thymeleaf3 TokenAttrProcessor (2018/03/14)
+    // TODO jflute #thymeleaf3 pri.B TokenAttrProcessor (2018/03/14)
     // extends AbstractAttributeModifierAttrProcessor
     //
     //// ===================================================================================

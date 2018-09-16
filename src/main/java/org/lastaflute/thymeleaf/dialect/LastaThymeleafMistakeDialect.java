@@ -56,8 +56,7 @@ public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
         processors.add(createMistakeAttrProcessor(PropertyAttrProcessor.ATTR_NAME));
         processors.add(createMistakeAttrProcessor(OptionClsAttrProcessor.ATTR_NAME));
 
-        // TODO jflute #thymeleaf3 processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME)) (2018/03/14)
-        //processors.add(newMistakeAttrProcessor(ForEachAttrProcessor.ATTRIBUTE_NAME));
+        // TODO jflute #thymeleaf3 pri.C processors.add(newMistakeAttrProcessor(TokenAttrProcessor.ATTRIBUTE_NAME)) (2018/03/14)
         //processors.add(newMistakeAttrProcessor(TokenAttrProcessor.ATTRIBUTE_NAME));
         return processors;
     }
@@ -66,7 +65,7 @@ public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
         return new MistakeAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, attrName);
     }
 
-    // TODO jflute #thymeleaf3 getAdditionalExpressionObjects() (2018/03/14)
+    // TODO jflute #thymeleaf3 pri.C unneeded? getAdditionalExpressionObjects() (2018/03/14)
     //@Override
     //public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
     //    return new HashMap<>();
