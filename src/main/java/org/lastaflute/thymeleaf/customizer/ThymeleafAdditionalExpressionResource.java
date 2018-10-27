@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.thymeleaf.context.IExpressionContext;
-
 /**
  * @author jflute
  * @since 0.3.0 (2017/03/22 Wednesday)
@@ -30,15 +28,7 @@ public class ThymeleafAdditionalExpressionResource {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected final IExpressionContext expressionContext;
     protected final Map<String, Object> expressionObjectMap = new LinkedHashMap<String, Object>();
-
-    // ===================================================================================
-    //                                                                         Constructor
-    //                                                                         ===========
-    public ThymeleafAdditionalExpressionResource(IExpressionContext expressionContext) {
-        this.expressionContext = expressionContext;
-    }
 
     // ===================================================================================
     //                                                                            Register
@@ -50,10 +40,6 @@ public class ThymeleafAdditionalExpressionResource {
     // ===================================================================================
     //                                                                            Accessor
     //                                                                            ========
-    public IExpressionContext getExpressionContext() {
-        return expressionContext;
-    }
-
     public Map<String, Object> getExpressionObjectMap() {
         return Collections.unmodifiableMap(expressionObjectMap);
     }

@@ -16,7 +16,6 @@
 package org.lastaflute.thymeleaf.dialect;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -50,24 +49,38 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
 
     protected static final String EXPRESSION_OBJECT_CLASSIFICATION = "cls";
     protected static final String EXPRESSION_OBJECT_HANDY = "handy";
-    protected static final Set<String> allExpressionObjectNames;
-    static {
-        allExpressionObjectNames = DfCollectionUtil.newHashSet(EXPRESSION_OBJECT_CLASSIFICATION, EXPRESSION_OBJECT_HANDY);
-    }
-    protected static final HandyDateExpressionObject HANDY_DATE_EXPRESSION_OBJECT = new HandyDateExpressionObject();
 
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
+    protected final Set<String> allExpressionObjectNames;
+    protected final HandyDateExpressionObject handyDateExpressionObject;
+    protected final LastaExpressionObjectFactory expressionObjectFactory;
     protected final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
-    protected final LastaExpressionObjectFactory expressionObjectFactory = new LastaExpressionObjectFactory();
+
     protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
+    protected Map<String, Object> additionalExpressionObjectMap; // not null after initialization (lazy-loaded)
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
     public LastaThymeleafDialect() {
         super("lasta", LASTA_THYMELEAF_DIALECT_PREFIX, 1000);
+        allExpressionObjectNames = prepareAllExpressionObjectNames();
+        handyDateExpressionObject = newHandyDateExpressionObject();
+        expressionObjectFactory = newLastaExpressionObjectFactory();
+    }
+
+    protected Set<String> prepareAllExpressionObjectNames() {
+        return DfCollectionUtil.newHashSet(EXPRESSION_OBJECT_CLASSIFICATION, EXPRESSION_OBJECT_HANDY);
+    }
+
+    protected HandyDateExpressionObject newHandyDateExpressionObject() {
+        return new HandyDateExpressionObject();
+    }
+
+    protected LastaExpressionObjectFactory newLastaExpressionObjectFactory() {
+        return new LastaExpressionObjectFactory();
     }
 
     public LastaThymeleafDialect additionalExpression(ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper) {
@@ -82,7 +95,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     //                                                                          Implements
     //                                                                          ==========
     @Override
-    public Set<IProcessor> getProcessors(String dialectPrefix) {
+    public Set<IProcessor> getProcessors(String dialectPrefix) { // only once called when first access
         final Set<IProcessor> processors = createLastaProcessorsSet();
         processors.addAll(getAdditionalProcessors());
         return processors;
@@ -116,7 +129,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     //}
 
     @Override
-    public IExpressionObjectFactory getExpressionObjectFactory() {
+    public IExpressionObjectFactory getExpressionObjectFactory() { // only once called when first access
         return expressionObjectFactory;
     }
 
@@ -124,6 +137,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
 
         @Override
         public Set<String> getAllExpressionObjectNames() {
+            initializeAdditionalExpressionIfNeeds(); // reflecting the names set to additional expressions
             return allExpressionObjectNames;
         }
 
@@ -132,22 +146,10 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
             if ("cls".equals(expressionObjectName)) {
                 return createClassificationExpressionObject(context);
             } else if ("handy".equals(expressionObjectName)) {
-                return HANDY_DATE_EXPRESSION_OBJECT;
+                return handyDateExpressionObject;
             }
-            // #for_now may need to improve performance? by jflute
-            final Map<String, Object> processorMap = new HashMap<>();
-            if (additionalExpressionSetupper != null) {
-                final ThymeleafAdditionalExpressionResource resource = createThymeleafCustomExpressionResource(context);
-                additionalExpressionSetupper.setup(resource);
-                resource.getExpressionObjectMap().forEach((key, processor) -> {
-                    if (processorMap.containsKey(key)) {
-                        String msg = "The processor key already exists in processor map: " + key + ", " + processorMap.keySet();
-                        throw new IllegalStateException(msg);
-                    }
-                    processorMap.put(key, processor);
-                });
-            }
-            final Object additionalObject = processorMap.get(expressionObjectName);
+            initializeAdditionalExpressionIfNeeds(); // preparing the object map
+            final Object additionalObject = additionalExpressionObjectMap.get(expressionObjectName);
             if (additionalObject != null) {
                 return additionalObject;
             }
@@ -164,8 +166,30 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         return new ClassificationExpressionObject(context);
     }
 
-    protected ThymeleafAdditionalExpressionResource createThymeleafCustomExpressionResource(IExpressionContext context) {
-        return new ThymeleafAdditionalExpressionResource(context);
+    protected ThymeleafAdditionalExpressionResource createThymeleafCustomExpressionResource() {
+        return new ThymeleafAdditionalExpressionResource();
+    }
+
+    protected void initializeAdditionalExpressionIfNeeds() {
+        if (additionalExpressionObjectMap != null) {
+            return;
+        }
+        synchronized (this) {
+            if (additionalExpressionObjectMap != null) {
+                return;
+            }
+            if (additionalExpressionSetupper != null) {
+                final ThymeleafAdditionalExpressionResource resource = createThymeleafCustomExpressionResource();
+                additionalExpressionSetupper.setup(resource);
+                final Map<String, Object> expressionObjectMap = resource.getExpressionObjectMap(); // read-only
+                expressionObjectMap.keySet().forEach(name -> {
+                    allExpressionObjectNames.add(name); // required since thymeleaf3
+                });
+                additionalExpressionObjectMap = expressionObjectMap;
+            } else {
+                additionalExpressionObjectMap = Collections.emptyMap();
+            }
+        }
     }
 
     // ===================================================================================
