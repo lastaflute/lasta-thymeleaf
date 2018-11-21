@@ -28,6 +28,7 @@ import org.lastaflute.thymeleaf.expression.HandyDateExpressionObject;
 import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.dialect.IExpressionObjectDialect;
@@ -106,8 +107,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         processors.add(createErrorsAttrProcessor());
         processors.add(createPropertyAttrProcessor());
         processors.add(createOptionClsAttrProcessor());
-        // TODO jflute #thymeleaf3 pri.B processors.add(createTokenAttrProcessor()) (2017/11/30)
-        //processors.add(createTokenAttrProcessor());
+        processors.add(createTokenAttrProcessor());
         return processors;
     }
 
@@ -123,10 +123,9 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         return new OptionClsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
     }
 
-    // migrating now
-    //protected TokenAttrProcessor createTokenAttrProcessor() {
-    //    return new TokenAttrProcessor();
-    //}
+    protected TokenAttrProcessor createTokenAttrProcessor() {
+        return new TokenAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
+    }
 
     @Override
     public IExpressionObjectFactory getExpressionObjectFactory() { // only once called when first access

@@ -24,7 +24,7 @@ import org.thymeleaf.standard.processor.AbstractStandardExpressionAttributeTagPr
 import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * Token Attribute Processor.
+ * Errors Attribute Processor.
  * <pre>
  * Usage:
  *   &lt;span <b>la:errors="sea"</b>/&gt;

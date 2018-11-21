@@ -15,6 +15,8 @@
  */
 package org.lastaflute.thymeleaf.processor.attr;
 
+import java.util.Arrays;
+
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.engine.AttributeName;
 import org.thymeleaf.model.IProcessableElementTag;
@@ -64,13 +66,9 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
             Object expressionResult, IElementTagStructureHandler structureHandler) {
         // #thinking nest property. by p1us2er0 (2018/09/04)
         final String propertyName = expressionResult.toString();
-        boolean hasThName = tag.hasAttribute(StandardDialect.PREFIX, "name");
-        boolean hasThText = tag.hasAttribute(StandardDialect.PREFIX, "text");
-        boolean hasThValue = tag.hasAttribute(StandardDialect.PREFIX, "value");
-
-        if (!hasThName) {
-            structureHandler.setAttribute("th:name", propertyName);
-        }
+        final boolean hasThName = tag.hasAttribute(StandardDialect.PREFIX, "name");
+        final boolean hasThText = tag.hasAttribute(StandardDialect.PREFIX, "text");
+        final boolean hasThValue = tag.hasAttribute(StandardDialect.PREFIX, "value");
 
         switch (tag.getElementCompleteName()) {
         case "input":
@@ -78,8 +76,7 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
                 structureHandler.setAttribute("th:name", propertyName);
             }
             if (!hasThValue) {
-                String type = tag.getAttributeValue("type");
-                if (!("checkbox".equals(type) || "radio".equals(type))) {
+                if (!Arrays.asList("checkbox", "radio").contains(tag.getAttributeValue("type"))) {
                     structureHandler.setAttribute("th:value", "${" + propertyName + "}");
                 }
             }
