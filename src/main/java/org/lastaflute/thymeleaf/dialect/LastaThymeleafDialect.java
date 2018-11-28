@@ -62,6 +62,8 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
     protected Map<String, Object> additionalExpressionObjectMap; // not null after initialization (lazy-loaded)
 
+    // #thinking pri.B want to use JsonManager in JS serialization (2018/11/28)
+
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
