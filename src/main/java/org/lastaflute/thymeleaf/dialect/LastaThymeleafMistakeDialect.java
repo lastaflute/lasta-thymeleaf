@@ -64,10 +64,4 @@ public class LastaThymeleafMistakeDialect extends AbstractProcessorDialect {
     protected MistakeAttrProcessor createMistakeAttrProcessor(String attrName) {
         return new MistakeAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, attrName);
     }
-
-    // TODO jflute #thymeleaf3 pri.C unneeded? getAdditionalExpressionObjects() (2018/03/14)
-    //@Override
-    //public Map<String, Object> getAdditionalExpressionObjects(IProcessingContext processingContext) {
-    //    return new HashMap<>();
-    //}
 }

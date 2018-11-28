@@ -74,7 +74,7 @@ public class OptionClsAttrProcessor extends AbstractStandardExpressionAttributeT
     public static final String ATTR_NAME = "optionCls";
     public static final int PRECEDENCE = 200;
     public static final boolean REMOVE_ATTRIBUTE = true;
-    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
+    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking pri.A can be true? need to research behavior when thymeleaf2 by jflute
 
     // ===================================================================================
     //                                                                         Constructor
@@ -104,7 +104,7 @@ public class OptionClsAttrProcessor extends AbstractStandardExpressionAttributeT
         }
     }
 
-    // TODO jflute #thymeleaf3 pri.A OptionClsAttrProcessor (2018/03/14)
+    // #thinking pri.B OptionClsAttrProcessor (2018/03/14)
     // extends AbstractAttributeModifierAttrProcessor
     //
     //// ===================================================================================

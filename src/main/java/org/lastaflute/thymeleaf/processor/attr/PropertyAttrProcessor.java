@@ -49,7 +49,7 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
     public static final String ATTR_NAME = "property";
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
-    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
+    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking pri.A can be true? need to research behavior when thymeleaf2 by jflute
 
     // ===================================================================================
     //                                                                         Constructor
@@ -64,7 +64,7 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
             Object expressionResult, IElementTagStructureHandler structureHandler) {
-        // #thinking nest property. by p1us2er0 (2018/09/04)
+        // #thinking pri.C nest property. by p1us2er0 (2018/09/04)
         final String propertyName = expressionResult.toString();
         final boolean hasThName = tag.hasAttribute(StandardDialect.PREFIX, "name");
         final boolean hasThText = tag.hasAttribute(StandardDialect.PREFIX, "text");

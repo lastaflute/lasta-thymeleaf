@@ -157,7 +157,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
 
         @Override
         public boolean isCacheable(String expressionObjectName) {
-            return false; // #thinking #thymeleaf3 all right? by jflute
+            return false; // #thinking pri.A isCacheable, false all right? by jflute
         }
     }
 

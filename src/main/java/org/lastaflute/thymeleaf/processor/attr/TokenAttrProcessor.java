@@ -49,7 +49,7 @@ public class TokenAttrProcessor extends AbstractStandardExpressionAttributeTagPr
     public static final String ATTR_NAME = "token";
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
-    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking can be true? need to research behavior when thymeleaf2 by jflute
+    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking pri.A can be true? need to research behavior when thymeleaf2 by jflute
 
     // ===================================================================================
     //                                                                         Constructor
@@ -91,7 +91,7 @@ public class TokenAttrProcessor extends AbstractStandardExpressionAttributeTagPr
         //} else {
         //    token = doubleSubmitManager.getSessionTokenMap().orElseThrow(() -> {
         //        return createThymeleafSessionTokenMapNotFoundException(runtime);
-        //    }).get(runtime.getActionType()).orElseThrow(() -> { // #thinking token group setting?
+        //    }).get(runtime.getActionType()).orElseThrow(() -> { // #thinking pri.C token group setting?
         //        return createThymeleafGroupTokenNotFoundException(runtime);
         //    });
         //}

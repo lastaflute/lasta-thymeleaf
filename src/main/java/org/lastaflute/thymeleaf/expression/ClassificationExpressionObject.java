@@ -120,6 +120,7 @@ public class ClassificationExpressionObject {
         }).listAll();
     }
 
+    // #thinking pri.B classification methods (2018/11/28)
     //// -----------------------------------------------------
     ////                                               alias()
     ////                                               -------
@@ -240,7 +241,7 @@ public class ClassificationExpressionObject {
 
     //
     protected String getRequestTemplatePath() {
-        // TODO jflute #thymeleaf3 pri.C how to implement getRequestTemplatePath() (2018/03/15)
+        // #thinking pri.C how to implement getRequestTemplatePath() (2018/03/15)
         //final IProcessingContext context = getProcessingContext();
         //return context instanceof Arguments ? ((Arguments) context).getTemplateName() : null;
         return null;
