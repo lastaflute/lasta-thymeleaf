@@ -95,12 +95,20 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     //                                                                              ======
     @Override
     public void render(RequestManager requestManager, ActionRuntime runtime, NextJourney journey) throws IOException, ServletException {
-        showRendering(journey);
-        final WebContext context = createTemplateContext(requestManager);
-        exportErrorsToContext(requestManager, context, runtime);
-        exportFormPropertyToContext(requestManager, context, runtime);
-        final String html = createResponseBody(templateEngine, context, runtime, journey);
-        write(requestManager, html);
+        if (isThymeleafJourney(journey)) {
+            showRendering(journey);
+            final WebContext context = createTemplateContext(requestManager);
+            exportErrorsToContext(requestManager, context, runtime);
+            exportFormPropertyToContext(requestManager, context, runtime);
+            final String html = createResponseBody(templateEngine, context, runtime, journey);
+            write(requestManager, html);
+        } else { // forward
+            requestManager.getResponseManager().forward(journey);
+        }
+    }
+
+    protected boolean isThymeleafJourney(NextJourney journey) {
+        return journey.getRoutingPath().endsWith(".html"); // simple but enough
     }
 
     protected void showRendering(NextJourney journey) {
