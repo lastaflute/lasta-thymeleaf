@@ -15,6 +15,8 @@
  */
 package org.lastaflute.thymeleaf;
 
+import java.util.function.Consumer;
+
 import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
 import org.lastaflute.thymeleaf.dialect.LastaThymeleafDialect;
 import org.lastaflute.thymeleaf.dialect.LastaThymeleafMistakeDialect;
@@ -27,6 +29,7 @@ import org.lastaflute.web.ruts.renderer.HtmlRenderingProvider;
 import org.lastaflute.web.util.LaServletContextUtil;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
+import org.thymeleaf.standard.StandardDialect;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
 
@@ -48,6 +51,8 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     //                                                                           =========
     protected boolean development;
     protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
+    protected Consumer<StandardDialect> standardDialectSetupper; // null allowed
+
     private TemplateEngine cachedTemplateEngine;
 
     // ===================================================================================
@@ -63,6 +68,14 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
             throw new IllegalArgumentException("The argument 'additionalExpressionSetupper' should not be null.");
         }
         this.additionalExpressionSetupper = additionalExpressionSetupper;
+        return this;
+    }
+
+    public ThymeleafRenderingProvider customizeStandardDialect(Consumer<StandardDialect> standardDialectSetupper) {
+        if (standardDialectSetupper == null) {
+            throw new IllegalArgumentException("The argument 'standardDialectSetupper' should not be null.");
+        }
+        this.standardDialectSetupper = standardDialectSetupper;
         return this;
     }
 
@@ -124,6 +137,20 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         engine.addMessageResolver(createLastaThymeleafMessageResolver());
         engine.addDialect(createLastaThymeleafDialect(engine));
         engine.addDialect(createLastaThymeleafMistakeDialect(engine));
+        setupStandardDialectIfNeeds(engine);
+    }
+
+    protected void setupStandardDialectIfNeeds(TemplateEngine engine) {
+        if (standardDialectSetupper != null) {
+            final StandardDialect standardDialect = findStandardDialect(engine);
+            standardDialectSetupper.accept(standardDialect);
+        }
+    }
+
+    protected StandardDialect findStandardDialect(TemplateEngine engine) {
+        return (StandardDialect) engine.getDialects().stream().filter(di -> {
+            return di instanceof StandardDialect;
+        }).findFirst().get(); // always present
     }
 
     // -----------------------------------------------------
