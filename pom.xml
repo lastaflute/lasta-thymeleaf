@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.lastaflute.html</groupId>
 	<artifactId>lasta-thymeleaf</artifactId>
-	<version>0.3.2-RC1</version>
+	<version>0.3.2</version>
 	<packaging>jar</packaging>
 
 	<name>Lasta Thymeleaf</name>
@@ -16,7 +16,7 @@
 		<thymeleaf.version>2.1.5.RELEASE</thymeleaf.version>
 		<javassist.version>3.20.0-GA</javassist.version> <!-- latest version without thymeleaf -->
 		<servlet.version>3.1.0</servlet.version>
-		<utflute.version>0.8.1</utflute.version>
+		<utflute.version>0.8.9</utflute.version>
 		<junit.version>4.8.2</junit.version> <!-- latest version without hamcrest -->
 	</properties>
 
