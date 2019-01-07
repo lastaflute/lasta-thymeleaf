@@ -17,7 +17,9 @@ package org.lastaflute.thymeleaf.customizer;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author jflute
@@ -29,6 +31,7 @@ public class ThymeleafAdditionalExpressionResource {
     //                                                                           Attribute
     //                                                                           =========
     protected final Map<String, Object> expressionObjectMap = new LinkedHashMap<String, Object>();
+    protected final Set<String> cacheableExpressionObjectNames = new LinkedHashSet<String>();
 
     // ===================================================================================
     //                                                                            Register
@@ -37,10 +40,21 @@ public class ThymeleafAdditionalExpressionResource {
         expressionObjectMap.put(key, expressionObject);
     }
 
+    public void registerExpressionObject(String key, Object expressionObject, boolean cacheable) {
+        expressionObjectMap.put(key, expressionObject);
+        if (cacheable) {
+            cacheableExpressionObjectNames.add(key);
+        }
+    }
+
     // ===================================================================================
     //                                                                            Accessor
     //                                                                            ========
     public Map<String, Object> getExpressionObjectMap() {
         return Collections.unmodifiableMap(expressionObjectMap);
+    }
+
+    public Set<String> getCacheableExpressionObjectNames() {
+        return Collections.unmodifiableSet(cacheableExpressionObjectNames);
     }
 }

@@ -55,6 +55,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     //                                                                           Attribute
     //                                                                           =========
     protected final Set<String> allExpressionObjectNames;
+    protected final Set<String> cacheableExpressionObjectNames;
     protected final HandyDateExpressionObject handyDateExpressionObject;
     protected final LastaExpressionObjectFactory expressionObjectFactory;
     protected final Set<IProcessor> additionalProcessors = new LinkedHashSet<IProcessor>();
@@ -70,12 +71,17 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     public LastaThymeleafDialect() {
         super("lasta", LASTA_THYMELEAF_DIALECT_PREFIX, 1000);
         allExpressionObjectNames = prepareAllExpressionObjectNames();
+        cacheableExpressionObjectNames = prepareCacheableExpressionObjectNames();
         handyDateExpressionObject = newHandyDateExpressionObject();
         expressionObjectFactory = newLastaExpressionObjectFactory();
     }
 
     protected Set<String> prepareAllExpressionObjectNames() {
         return DfCollectionUtil.newHashSet(EXPRESSION_OBJECT_CLASSIFICATION, EXPRESSION_OBJECT_HANDY);
+    }
+
+    protected Set<String> prepareCacheableExpressionObjectNames() {
+        return DfCollectionUtil.newHashSet();
     }
 
     protected HandyDateExpressionObject newHandyDateExpressionObject() {
@@ -159,7 +165,8 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
 
         @Override
         public boolean isCacheable(String expressionObjectName) {
-            return false; // #thinking pri.A isCacheable, false all right? by jflute
+            // if not specified, false for safety
+            return cacheableExpressionObjectNames.contains(expressionObjectName);
         }
     }
 
@@ -187,6 +194,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
                     allExpressionObjectNames.add(name); // required since thymeleaf3
                 });
                 additionalExpressionObjectMap = expressionObjectMap;
+                cacheableExpressionObjectNames.addAll(resource.getCacheableExpressionObjectNames());
             } else {
                 additionalExpressionObjectMap = Collections.emptyMap();
             }
