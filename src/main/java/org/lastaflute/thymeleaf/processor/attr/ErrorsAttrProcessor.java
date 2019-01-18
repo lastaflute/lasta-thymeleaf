@@ -109,6 +109,7 @@ public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagP
         return DEFAULT_STYLE;
     }
 
+    // these are for Thymeleaf2, comment out as reference for migration
     // ===================================================================================
     //                                                                     Option Override
     //                                                                     ===============
@@ -119,7 +120,7 @@ public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagP
     //    return ModificationType.SUBSTITUTION;
     //}
 
-    // #thinking pri.A what is recompute? by jflute
+    // what is recompute? however this tag works well so no care for now by jflute
     //@Override
     //protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
     //    return true;
