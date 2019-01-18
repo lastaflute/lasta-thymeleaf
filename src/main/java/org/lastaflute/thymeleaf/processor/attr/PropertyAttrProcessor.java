@@ -67,7 +67,7 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
         if (expressionResult == null) { // e.g. la:property="${detarame}"
             throw new IllegalStateException("The expressionResult cannot be null: " + attributeName + ", " + attributeValue);
         }
-        // #thinking pri.C nest property. by p1us2er0 (2018/09/04)
+        // #hope p1us2er0 pri.C nest property (2018/09/04)
         final String propertyName = expressionResult.toString();
         final boolean hasThName = tag.hasAttribute(StandardDialect.PREFIX, "name");
         final boolean hasThText = tag.hasAttribute(StandardDialect.PREFIX, "text");
