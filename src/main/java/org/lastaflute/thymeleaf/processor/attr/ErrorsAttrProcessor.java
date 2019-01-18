@@ -16,6 +16,7 @@
 package org.lastaflute.thymeleaf.processor.attr;
 
 import org.dbflute.util.Srl;
+import org.lastaflute.thymeleaf.processor.attr.option.ExpressionAttributeTagInitOption;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.engine.AttributeName;
 import org.thymeleaf.model.IProcessableElementTag;
@@ -46,7 +47,6 @@ public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagP
     public static final String ATTR_NAME = "errors"; // e.g. la:errors="sea"
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
-    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking pri.A can be true? need to research behavior when thymeleaf2 by jflute
 
     // -----------------------------------------------------
     //                                      Changeable Value
@@ -56,8 +56,8 @@ public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagP
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ErrorsAttrProcessor(String dialectPrefix) {
-        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, RESTRICTED_EXPRESSION_EXECUTION);
+    public ErrorsAttrProcessor(String dialectPrefix, ExpressionAttributeTagInitOption option) {
+        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, option.isRestrictedExpressionExecution());
     }
 
     // ===================================================================================

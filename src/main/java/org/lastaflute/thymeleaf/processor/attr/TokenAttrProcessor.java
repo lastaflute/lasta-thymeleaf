@@ -19,6 +19,7 @@ import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.lastaflute.core.util.ContainerUtil;
 import org.lastaflute.thymeleaf.processor.attr.exception.ThymeleafTokenNotHiddenTypeException;
 import org.lastaflute.thymeleaf.processor.attr.exception.ThymeleafTokenNotInputTypeException;
+import org.lastaflute.thymeleaf.processor.attr.option.ExpressionAttributeTagInitOption;
 import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.token.DoubleSubmitManager;
@@ -54,8 +55,8 @@ public class TokenAttrProcessor extends AbstractStandardExpressionAttributeTagPr
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public TokenAttrProcessor(String dialectPrefix) {
-        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, RESTRICTED_EXPRESSION_EXECUTION);
+    public TokenAttrProcessor(String dialectPrefix, ExpressionAttributeTagInitOption option) {
+        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, option.isRestrictedExpressionExecution());
     }
 
     @Override

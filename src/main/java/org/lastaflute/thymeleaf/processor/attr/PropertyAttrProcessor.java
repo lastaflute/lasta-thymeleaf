@@ -17,6 +17,7 @@ package org.lastaflute.thymeleaf.processor.attr;
 
 import java.util.Arrays;
 
+import org.lastaflute.thymeleaf.processor.attr.option.ExpressionAttributeTagInitOption;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.engine.AttributeName;
 import org.thymeleaf.model.IProcessableElementTag;
@@ -49,13 +50,12 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
     public static final String ATTR_NAME = "property";
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
-    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking pri.A can be true? need to research behavior when thymeleaf2 by jflute
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public PropertyAttrProcessor(String dialectPrefix) {
-        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, RESTRICTED_EXPRESSION_EXECUTION);
+    public PropertyAttrProcessor(String dialectPrefix, ExpressionAttributeTagInitOption option) {
+        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, option.isRestrictedExpressionExecution());
     }
 
     // ===================================================================================

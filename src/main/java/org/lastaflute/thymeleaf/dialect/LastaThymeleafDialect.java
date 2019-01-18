@@ -29,6 +29,7 @@ import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
 import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
+import org.lastaflute.thymeleaf.processor.attr.option.ExpressionAttributeTagInitOption;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.dialect.IExpressionObjectDialect;
@@ -118,19 +119,25 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     }
 
     protected ErrorsAttrProcessor createErrorsAttrProcessor() {
-        return new ErrorsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
+        return new ErrorsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
     }
 
     protected PropertyAttrProcessor createPropertyAttrProcessor() {
-        return new PropertyAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
+        return new PropertyAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
     }
 
     protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
-        return new OptionClsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
+        return new OptionClsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
     }
 
     protected TokenAttrProcessor createTokenAttrProcessor() {
-        return new TokenAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX);
+        return new TokenAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
+    }
+
+    protected ExpressionAttributeTagInitOption createLastaExpressionAttributeTagInitOption() {
+        // tags that Lasta Thymeleaf provides do not need request parameter access
+        // and also for security, so restricted here
+        return new ExpressionAttributeTagInitOption().restrictExpressionExecution();
     }
 
     @Override
