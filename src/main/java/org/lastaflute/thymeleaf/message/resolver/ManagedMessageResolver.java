@@ -35,13 +35,14 @@ public class ManagedMessageResolver extends AbstractMessageResolver {
 
     @Override
     public String resolveMessage(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
-        final Locale locale = context.getLocale(); // #thinking pri.B is the same as requestManager's user locacle? by jflute (2018/09/17)
+        // basically this locale is synchronized with requestManager's user locale
+        // (WebContext is created by ThymeleafHtmlRenderer)
+        final Locale locale = context.getLocale();
         return messageManager.findMessage(locale, key, messageParameters).orElse(null);
     }
 
     @Override
     public String createAbsentMessageRepresentation(ITemplateContext context, Class<?> origin, String key, Object[] messageParameters) {
-        // #thinking pri.B what should I do? by jflute
-        return null;
+        return null; // as default of framework (you can override if it needs)
     }
 }
