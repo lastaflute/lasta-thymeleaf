@@ -91,7 +91,7 @@ public class TokenAttrProcessor extends AbstractStandardExpressionAttributeTagPr
         //} else {
         //    token = doubleSubmitManager.getSessionTokenMap().orElseThrow(() -> {
         //        return createThymeleafSessionTokenMapNotFoundException(runtime);
-        //    }).get(runtime.getActionType()).orElseThrow(() -> { // #thinking pri.C token group setting?
+        //    }).get(runtime.getActionType()).orElseThrow(() -> {
         //        return createThymeleafGroupTokenNotFoundException(runtime);
         //    });
         //}
