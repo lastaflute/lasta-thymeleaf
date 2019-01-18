@@ -120,54 +120,52 @@ public class ClassificationExpressionObject {
         }).listAll();
     }
 
-    // #thinking pri.B classification methods (2018/11/28)
-    //// -----------------------------------------------------
-    ////                                               alias()
-    ////                                               -------
-    ///**
-    // * Get classification alias.
-    // * @param cls The instance of classification to get code. (NotNull)
-    // * @return The alias of classification. (NotNull: if not classification, throws exception)
-    // */
-    //public String alias(Object cls) {
-    //    assertArgumentNotNull("cls", cls);
-    //    assertCanBeClassification(cls);
-    //    return findClassificationAlias((Classification) cls);
-    //}
-    //
-    ///**
-    // * Get classification alias or default value if the classification is null.
-    // * @param cls The instance of classification to get code. (NotNull)
-    // * @param defaultValue The default value for no classification. (NotNull, EmptyAllowed)
-    // * @return The alias of classification. (NotNull: if not classification, throws exception)
-    // */
-    //public String alias(Object cls, String defaultValue) {
-    //    assertArgumentNotNull("defaultValue", defaultValue);
-    //    if (cls != null) {
-    //        return alias(cls);
-    //    } else {
-    //        return defaultValue;
-    //    }
-    //}
-    //
-    //// should be by-code, and may be unneeded by native property in form
-    /////**
-    //// * Get classification alias.
-    //// * @param classificationName The name of classification. (NotNull)
-    //// * @param elementName The name of classification element. (NotNull)
-    //// * @return classification alias (NotNull: if not found, throws exception)
-    //// */
-    ////public String alias(String classificationName, String elementName) {
-    ////    assertArgumentNotNull("classificationName", classificationName);
-    ////    assertArgumentNotNull("elementName", elementName);
-    ////    final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
-    ////        return "alias('" + classificationName + "', '" + elementName + "')";
-    ////    });
-    ////    final Classification cls = meta.nameOf(elementName);
-    ////    assertClassificationByNameExists(classificationName, elementName, cls);
-    ////    return findClassificationAlias(cls);
-    ////}
-    //
+    // -----------------------------------------------------
+    //                                               alias()
+    //                                               -------
+    /**
+     * Get classification alias.
+     * @param cls The instance of classification to get code. (NotNull)
+     * @return The alias of classification. (NotNull: if not classification, throws exception)
+     */
+    public String alias(Object cls) {
+        assertArgumentNotNull("cls", cls);
+        assertCanBeClassification(cls);
+        return findClassificationAlias((Classification) cls);
+    }
+
+    /**
+     * Get classification alias or default value if the classification is null.
+     * @param cls The instance of classification to get code. (NotNull)
+     * @param defaultValue The default value for no classification. (NotNull, EmptyAllowed)
+     * @return The alias of classification. (NotNull: if not classification, throws exception)
+     */
+    public String alias(Object cls, String defaultValue) {
+        assertArgumentNotNull("defaultValue", defaultValue);
+        if (cls != null) {
+            return alias(cls);
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Get classification alias.
+     * @param classificationName The name of classification. (NotNull)
+     * @param elementName The name of classification element. (NotNull)
+     * @return classification alias (NotNull: if not found, throws exception)
+     */
+    public String alias(String classificationName, String elementName) {
+        assertArgumentNotNull("classificationName", classificationName);
+        assertArgumentNotNull("elementName", elementName);
+        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
+            return "alias('" + classificationName + "', '" + elementName + "')";
+        });
+        final Classification cls = meta.nameOf(elementName);
+        assertClassificationByNameExists(classificationName, elementName, cls);
+        return findClassificationAlias(cls);
+    }
+
     // -----------------------------------------------------
     //                                                code()
     //                                                ------
@@ -182,64 +180,59 @@ public class ClassificationExpressionObject {
         return ((Classification) cls).code();
     }
 
-    ///**
-    // * Get classification code.
-    // * @param classificationName The name of classification. (NotNull)
-    // * @param elementName The name of classification element. (NotNull)
-    // * @return The found code of classification. (NotNull: if not found, throws exception)
-    // */
-    //public String code(String classificationName, String elementName) {
-    //    assertArgumentNotNull("classificationName", classificationName);
-    //    assertArgumentNotNull("elementName", elementName);
-    //    final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
-    //        return "code('" + classificationName + "', '" + elementName + "')";
-    //    });
-    //    final Classification cls = meta.nameOf(elementName);
-    //    assertClassificationByNameExists(classificationName, elementName, cls);
-    //    return cls.code();
-    //}
-    //
-    //// -----------------------------------------------------
-    ////                                               ...Of()
-    ////                                               -------
-    ///**
-    // * Get classification by code.
-    // * @param classificationName The name of classification. (NotNull)
-    // * @param code The code of classification to find. (NotNull)
-    // * @return The found instance of classification for the code. (NotNull: if not found, throws exception)
-    // */
-    //public Classification codeOf(String classificationName, String code) {
-    //    assertArgumentNotNull("elementName", classificationName);
-    //    assertArgumentNotNull("code", code);
-    //    return findClassificationMeta(classificationName, () -> {
-    //        return "codeOf('" + classificationName + "', '" + code + "')";
-    //    }).codeOf(code);
-    //}
-    //
-    ///**
-    // * Get classification by name.
-    // * @param classificationName The name of classification. (NotNull)
-    // * @param name The name of classification to find. (NotNull)
-    // * @return The found instance of classification for the code. (NotNull: if not found, throws exception)
-    // */
-    //public Classification nameOf(String classificationName, String name) {
-    //    return findClassificationMeta((String) classificationName, () -> {
-    //        return "nameOf('" + classificationName + "', '" + name + "')";
-    //    }).nameOf(name);
-    //}
-    //
-    //// ===================================================================================
-    ////                                                                            Accessor
-    ////                                                                            ========
-    //protected IProcessingContext getProcessingContext() {
-    //    return processingContext;
-    //}
-    //
-    protected Locale getUserLocale() {
-        return context.getLocale(); // from web context
+    /**
+     * Get classification code.
+     * @param classificationName The name of classification. (NotNull)
+     * @param elementName The name of classification element. (NotNull)
+     * @return The found code of classification. (NotNull: if not found, throws exception)
+     */
+    public String code(String classificationName, String elementName) {
+        assertArgumentNotNull("classificationName", classificationName);
+        assertArgumentNotNull("elementName", elementName);
+        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
+            return "code('" + classificationName + "', '" + elementName + "')";
+        });
+        final Classification cls = meta.nameOf(elementName);
+        assertClassificationByNameExists(classificationName, elementName, cls);
+        return cls.code();
     }
 
-    //
+    // -----------------------------------------------------
+    //                                               ...Of()
+    //                                               -------
+    /**
+     * Get classification by code.
+     * @param classificationName The name of classification. (NotNull)
+     * @param code The code of classification to find. (NotNull)
+     * @return The found instance of classification for the code. (NotNull: if not found, throws exception)
+     */
+    public Classification codeOf(String classificationName, String code) {
+        assertArgumentNotNull("elementName", classificationName);
+        assertArgumentNotNull("code", code);
+        return findClassificationMeta(classificationName, () -> {
+            return "codeOf('" + classificationName + "', '" + code + "')";
+        }).codeOf(code);
+    }
+
+    /**
+     * Get classification by name.
+     * @param classificationName The name of classification. (NotNull)
+     * @param name The name of classification to find. (NotNull)
+     * @return The found instance of classification for the code. (NotNull: if not found, throws exception)
+     */
+    public Classification nameOf(String classificationName, String name) {
+        return findClassificationMeta((String) classificationName, () -> {
+            return "nameOf('" + classificationName + "', '" + name + "')";
+        }).nameOf(name);
+    }
+
+    // ===================================================================================
+    //                                                                  Thymeleaf Resource
+    //                                                                  ==================
+    protected Locale getUserLocale() {
+        return context.getLocale(); // from web context (synchronized with requestManager's user locale)
+    }
+
     protected String getRequestTemplatePath() {
         // #thinking pri.C how to implement getRequestTemplatePath() (2018/03/15)
         //final IProcessingContext context = getProcessingContext();
@@ -247,21 +240,19 @@ public class ClassificationExpressionObject {
         return null;
     }
 
-    //
-    //// ===================================================================================
-    ////                                                                      Classification
-    ////                                                                      ==============
+    // ===================================================================================
+    //                                                                      Classification
+    //                                                                      ==============
     protected ClassificationMeta findClassificationMeta(String classificationName, Supplier<Object> callerInfo) {
         return provideClassificationMeta(getListedClassificationProvider(), classificationName, callerInfo);
     }
 
-    //
-    //protected String findClassificationAlias(Classification cls) {
-    //    return determineClassificationAliasKey().map(key -> {
-    //        return (String) cls.subItemMap().get(key);
-    //    }).orElse(cls.alias());
-    //}
-    //
+    protected String findClassificationAlias(Classification cls) {
+        return determineClassificationAliasKey().map(key -> {
+            return (String) cls.subItemMap().get(key);
+        }).orElse(cls.alias());
+    }
+
     protected OptionalThing<String> determineClassificationAliasKey() {
         return getListedClassificationProvider().determineAlias(getUserLocale());
     }
@@ -326,23 +317,23 @@ public class ClassificationExpressionObject {
         throw new TemplateProcessingException(msg);
     }
 
-    //protected void assertClassificationByNameExists(String classificationName, String elementName, Classification cls) {
-    //    if (cls == null) {
-    //        throwClassificationByNameNotFoundException(classificationName, elementName);
-    //    }
-    //}
-    //
-    //protected void throwClassificationByNameNotFoundException(String classificationName, String elementName) {
-    //    final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
-    //    br.addNotice("Non found the classification by the name.");
-    //    br.addItem("Classification Name");
-    //    br.addElement(classificationName);
-    //    br.addItem("Specified Name");
-    //    br.addElement(elementName);
-    //    final String msg = br.buildExceptionMessage();
-    //    throw new TemplateProcessingException(msg);
-    //}
-    //
+    protected void assertClassificationByNameExists(String classificationName, String elementName, Classification cls) {
+        if (cls == null) {
+            throwClassificationByNameNotFoundException(classificationName, elementName);
+        }
+    }
+
+    protected void throwClassificationByNameNotFoundException(String classificationName, String elementName) {
+        final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
+        br.addNotice("Non found the classification by the name.");
+        br.addItem("Classification Name");
+        br.addElement(classificationName);
+        br.addItem("Specified Name");
+        br.addElement(elementName);
+        final String msg = br.buildExceptionMessage();
+        throw new TemplateProcessingException(msg);
+    }
+
     protected void assertArgumentNotNull(String variableName, Object value) {
         if (variableName == null) {
             throw new IllegalArgumentException("The argument 'variableName' should not be null.");
