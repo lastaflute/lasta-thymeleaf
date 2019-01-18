@@ -50,7 +50,6 @@ public class TokenAttrProcessor extends AbstractStandardExpressionAttributeTagPr
     public static final String ATTR_NAME = "token";
     public static final int PRECEDENCE = 950;
     public static final boolean REMOVE_ATTRIBUTE = true;
-    public static final boolean RESTRICTED_EXPRESSION_EXECUTION = false; // #thinking pri.A can be true? need to research behavior when thymeleaf2 by jflute
 
     // ===================================================================================
     //                                                                         Constructor
