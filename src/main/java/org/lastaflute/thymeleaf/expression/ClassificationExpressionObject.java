@@ -29,6 +29,8 @@ import org.lastaflute.core.util.ContainerUtil;
 import org.lastaflute.db.dbflute.classification.ListedClassificationProvider;
 import org.lastaflute.db.dbflute.exception.ProvidedClassificationNotFoundException;
 import org.thymeleaf.context.IExpressionContext;
+import org.thymeleaf.context.WebEngineContext;
+import org.thymeleaf.engine.TemplateData;
 import org.thymeleaf.exceptions.TemplateProcessingException;
 
 /**
@@ -229,14 +231,17 @@ public class ClassificationExpressionObject {
     // ===================================================================================
     //                                                                  Thymeleaf Resource
     //                                                                  ==================
-    protected Locale getUserLocale() {
+    protected Locale getUserLocale() { // not null
         return context.getLocale(); // from web context (synchronized with requestManager's user locale)
     }
 
-    protected String getRequestTemplatePath() {
-        // #thinking pri.C how to implement getRequestTemplatePath() (2018/03/15)
-        //final IProcessingContext context = getProcessingContext();
-        //return context instanceof Arguments ? ((Arguments) context).getTemplateName() : null;
+    protected String getRequestTemplatePath() { // null allowed (basically not null, just in case)
+        if (context instanceof WebEngineContext) { // basically true
+            final TemplateData templateData = ((WebEngineContext) context).getTemplateData();
+            if (templateData != null) { // basically true
+                return templateData.getTemplate(); // not null (by JavaDoc)
+            }
+        }
         return null;
     }
 
@@ -261,7 +266,6 @@ public class ClassificationExpressionObject {
         return getAssistantDirector().assistDbDirection().assistListedClassificationProvider();
     }
 
-    //
     protected ClassificationMeta provideClassificationMeta(ListedClassificationProvider provider, String classificationName,
             Supplier<Object> callerInfo) {
         try {
