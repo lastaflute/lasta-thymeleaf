@@ -153,6 +153,10 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         }).findFirst().get(); // always present
     }
 
+    // #history jflute Lasta Thymeleaf uses embedded JSON serializer as default (2019/01/18)
+    // application can set your own JavaScriptSerializer via StandardDialect
+    // and JsonManager is not always matched with thymeleaf JSON handling
+
     // -----------------------------------------------------
     //                                     Template Resolver
     //                                     -----------------
