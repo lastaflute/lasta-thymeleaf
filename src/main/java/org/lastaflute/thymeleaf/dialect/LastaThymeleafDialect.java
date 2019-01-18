@@ -25,11 +25,7 @@ import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionResource
 import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
 import org.lastaflute.thymeleaf.expression.ClassificationExpressionObject;
 import org.lastaflute.thymeleaf.expression.HandyDateExpressionObject;
-import org.lastaflute.thymeleaf.processor.attr.ErrorsAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.OptionClsAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.PropertyAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.TokenAttrProcessor;
-import org.lastaflute.thymeleaf.processor.attr.option.ExpressionAttributeTagInitOption;
+import org.lastaflute.thymeleaf.processor.factory.LastaProcessorFactory;
 import org.thymeleaf.context.IExpressionContext;
 import org.thymeleaf.dialect.AbstractProcessorDialect;
 import org.thymeleaf.dialect.IExpressionObjectDialect;
@@ -91,6 +87,9 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         return new LastaExpressionObjectFactory();
     }
 
+    // -----------------------------------------------------
+    //                                                Option
+    //                                                ------
     public LastaThymeleafDialect additionalExpression(ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper) {
         if (additionalExpressionSetupper == null) {
             throw new IllegalArgumentException("The argument 'additionalExpressionSetupper' should not be null.");
@@ -99,47 +98,17 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         return this;
     }
 
+    public LastaThymeleafDialect additionalProcessor(IProcessor processor) {
+        if (processor == null) {
+            throw new IllegalArgumentException("The argument 'processor' should not be null.");
+        }
+        this.additionalProcessors.add(processor);
+        return this;
+    }
+
     // ===================================================================================
-    //                                                                          Implements
-    //                                                                          ==========
-    @Override
-    public Set<IProcessor> getProcessors(String dialectPrefix) { // only once called when first access
-        final Set<IProcessor> processors = createLastaProcessorsSet();
-        processors.addAll(getAdditionalProcessors());
-        return processors;
-    }
-
-    protected Set<IProcessor> createLastaProcessorsSet() {
-        final Set<IProcessor> processors = new LinkedHashSet<IProcessor>();
-        processors.add(createErrorsAttrProcessor());
-        processors.add(createPropertyAttrProcessor());
-        processors.add(createOptionClsAttrProcessor());
-        processors.add(createTokenAttrProcessor());
-        return processors;
-    }
-
-    protected ErrorsAttrProcessor createErrorsAttrProcessor() {
-        return new ErrorsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
-    }
-
-    protected PropertyAttrProcessor createPropertyAttrProcessor() {
-        return new PropertyAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
-    }
-
-    protected OptionClsAttrProcessor createOptionClsAttrProcessor() {
-        return new OptionClsAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
-    }
-
-    protected TokenAttrProcessor createTokenAttrProcessor() {
-        return new TokenAttrProcessor(LASTA_THYMELEAF_DIALECT_PREFIX, createLastaExpressionAttributeTagInitOption());
-    }
-
-    protected ExpressionAttributeTagInitOption createLastaExpressionAttributeTagInitOption() {
-        // tags that Lasta Thymeleaf provides do not need request parameter access
-        // and also for security, so restricted here
-        return new ExpressionAttributeTagInitOption().restrictExpressionExecution();
-    }
-
+    //                                                                   Expression Object
+    //                                                                   =================
     @Override
     public IExpressionObjectFactory getExpressionObjectFactory() { // only once called when first access
         return expressionObjectFactory;
@@ -156,7 +125,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         @Override
         public Object buildObject(IExpressionContext context, String expressionObjectName) {
             if ("cls".equals(expressionObjectName)) {
-                return createClassificationExpressionObject(context);
+                return newClassificationExpressionObject(context);
             } else if ("handy".equals(expressionObjectName)) {
                 return handyDateExpressionObject;
             }
@@ -175,11 +144,11 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
         }
     }
 
-    protected ClassificationExpressionObject createClassificationExpressionObject(IExpressionContext context) {
+    protected ClassificationExpressionObject newClassificationExpressionObject(IExpressionContext context) {
         return new ClassificationExpressionObject(context);
     }
 
-    protected ThymeleafAdditionalExpressionResource createThymeleafCustomExpressionResource() {
+    protected ThymeleafAdditionalExpressionResource newThymeleafCustomExpressionResource() {
         return new ThymeleafAdditionalExpressionResource();
     }
 
@@ -192,7 +161,7 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
                 return;
             }
             if (additionalExpressionSetupper != null) {
-                final ThymeleafAdditionalExpressionResource resource = createThymeleafCustomExpressionResource();
+                final ThymeleafAdditionalExpressionResource resource = newThymeleafCustomExpressionResource();
                 additionalExpressionSetupper.setup(resource);
                 final Map<String, Object> expressionObjectMap = resource.getExpressionObjectMap(); // read-only
                 expressionObjectMap.keySet().forEach(name -> {
@@ -207,13 +176,24 @@ public class LastaThymeleafDialect extends AbstractProcessorDialect implements I
     }
 
     // ===================================================================================
-    //                                                                            Accessor
-    //                                                                            ========
-    public Set<IProcessor> getAdditionalProcessors() {
-        return Collections.unmodifiableSet(additionalProcessors);
+    //                                                                  Embedded Processor
+    //                                                                  ==================
+    @Override
+    public Set<IProcessor> getProcessors(String dialectPrefix) { // only once called when first access
+        final Set<IProcessor> processors = createLastaProcessorsSet();
+        processors.addAll(getAdditionalProcessors());
+        return processors;
     }
 
-    public void addAdditionalProcessor(IProcessor processor) {
-        this.additionalProcessors.add(processor);
+    protected Set<IProcessor> createLastaProcessorsSet() {
+        return newLastaProcessorFactory(LASTA_THYMELEAF_DIALECT_PREFIX).createLastaProcessorsSet();
+    }
+
+    protected LastaProcessorFactory newLastaProcessorFactory(String dialectPrefix) {
+        return new LastaProcessorFactory(dialectPrefix);
+    }
+
+    public Set<IProcessor> getAdditionalProcessors() { // as accessor
+        return Collections.unmodifiableSet(additionalProcessors);
     }
 }
