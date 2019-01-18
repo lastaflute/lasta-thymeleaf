@@ -64,6 +64,9 @@ public class PropertyAttrProcessor extends AbstractStandardExpressionAttributeTa
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
             Object expressionResult, IElementTagStructureHandler structureHandler) {
+        if (expressionResult == null) { // e.g. la:property="${detarame}"
+            throw new IllegalStateException("The expressionResult cannot be null: " + attributeName + ", " + attributeValue);
+        }
         // #thinking pri.C nest property. by p1us2er0 (2018/09/04)
         final String propertyName = expressionResult.toString();
         final boolean hasThName = tag.hasAttribute(StandardDialect.PREFIX, "name");
