@@ -17,7 +17,7 @@ package org.lastaflute.thymeleaf.processor.attr.option;
 
 /**
  * @author jflute
- * @since 0.4.0 (2019/01/18 at broadway theatre)
+ * @since 0.4.0 (2019/01/18 Friday at broadway theatre)
  */
 public class ExpressionAttributeTagInitOption {
 
