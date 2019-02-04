@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8"/>
+	<title th:text="${title} + ' | MyTry'">title</title>
+</head>
+<br>
+<body>
+	<p th:if="${headerBean.isLogin}" class="nameHeader" th:text="'Hello, ' + ${headerBean.memberName}">Hello, ${f:h(headerBean.memberName)}</p>
+	<p th:unless="${headerBean.isLogin}" class="nameHeader">Welcome, Mr.Guest</p>
+</body>
+</html>

@@ -13,16 +13,23 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor.attr.exception;
+package org.lastaflute.thymeleaf.processor.attr.option;
 
 /**
  * @author jflute
+ * @since 0.4.0 (2019/01/18 Friday at broadway theatre)
  */
-public class ThymeleafTokenNotHiddenTypeException extends RuntimeException {
+public class ExpressionAttributeTagInitOption {
 
-    private static final long serialVersionUID = 1L;
+    // suppress la:property="${param.sea}" ('param' means request parameters) or not
+    protected boolean restrictedExpressionExecution;
 
-    public ThymeleafTokenNotHiddenTypeException(String msg) {
-        super(msg);
+    public ExpressionAttributeTagInitOption restrictExpressionExecution() {
+        this.restrictedExpressionExecution = true;
+        return this;
+    }
+
+    public boolean isRestrictedExpressionExecution() {
+        return restrictedExpressionExecution;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import org.lastaflute.di.helper.beans.PropertyDesc;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyConflictingWithRegisteredDataException;
 import org.lastaflute.thymeleaf.exception.ThymeleafFormPropertyUsingReservedWordException;
 import org.lastaflute.thymeleaf.exception.ThymeleafResisteredDataUsingReservedWordException;
-import org.lastaflute.thymeleaf.messages.ErrorMessages;
+import org.lastaflute.thymeleaf.message.ErrorMessages;
 import org.lastaflute.web.LastaWebKey;
 import org.lastaflute.web.exception.RequestForwardFailureException;
 import org.lastaflute.web.ruts.NextJourney;
@@ -47,12 +47,12 @@ import org.lastaflute.web.servlet.request.RequestManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.VariablesMap;
 import org.thymeleaf.context.WebContext;
 
 /**
  * @author jflute
  * @author schatten
+ * @author Toshi504
  */
 public class ThymeleafHtmlRenderer implements HtmlRenderer {
 
@@ -125,7 +125,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         final HttpServletRequest request = requestManager.getRequest();
         final HttpServletResponse response = requestManager.getResponseManager().getResponse();
         final ServletContext servletContext = request.getServletContext();
-        final Locale locale = request.getLocale();
+        final Locale locale = requestManager.getUserLocale();
         return new WebContext(request, response, servletContext, locale);
     }
 
@@ -179,9 +179,8 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         if (isSuppressRegisteredDataUsingReservedWordCheck()) {
             return;
         }
-        final VariablesMap<String, Object> variableMap = context.getVariables();
-        if (variableMap.containsKey(varKey)) {
-            throwThymeleafRegisteredDataUsingReservedWordException(runtime, variableMap, varKey);
+        if (context.getVariableNames().contains(varKey)) {
+            throwThymeleafRegisteredDataUsingReservedWordException(runtime, context, varKey);
         }
     }
 
@@ -189,8 +188,7 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         return false;
     }
 
-    protected void throwThymeleafRegisteredDataUsingReservedWordException(ActionRuntime runtime, VariablesMap<String, Object> variables,
-            String dataKey) {
+    protected void throwThymeleafRegisteredDataUsingReservedWordException(ActionRuntime runtime, WebContext context, String dataKey) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Cannot use the data key '" + dataKey + "' .");
         br.addItem("Advice");
@@ -207,9 +205,9 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         br.addItem("Action");
         br.addElement(runtime);
         br.addItem("Variable Map");
-        variables.forEach((key, value) -> {
-            br.addElement(key + " = " + value);
-        });
+        for (String variableName : context.getVariableNames()) {
+            br.addElement(variableName + " = " + context.getVariable(variableName));
+        }
         br.addItem("Bad DataKey");
         br.addElement(dataKey);
         br.addItem("Reserved Word");
@@ -228,12 +226,11 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
             if (properties.isEmpty()) {
                 return;
             }
-            final VariablesMap<String, Object> variableMap = context.getVariables();
             for (ActionFormProperty property : properties) {
                 if (isExportableProperty(property.getPropertyDesc())) {
                     final String propertyName = property.getPropertyName();
                     checkFormPropertyUsingReservedWord(runtime, virtualForm, propertyName);
-                    checkFormPropertyConflictingWithRegisteredData(runtime, variableMap, propertyName);
+                    checkFormPropertyConflictingWithRegisteredData(runtime, context, propertyName);
                     final Object propertyValue = virtualForm.getPropertyValue(property);
                     if (propertyValue != null) {
                         context.setVariable(propertyName, propertyValue);
@@ -289,15 +286,14 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     // -----------------------------------------------------
     //                                    Conflict with Data
     //                                    ------------------
-    protected void checkFormPropertyConflictingWithRegisteredData(ActionRuntime runtime, VariablesMap<String, Object> variableMap,
-            String propertyName) {
-        if (variableMap.containsKey(propertyName)) {
-            throwThymeleafFormPropertyConflictingWithRegisteredDataException(runtime, variableMap, propertyName);
+    protected void checkFormPropertyConflictingWithRegisteredData(ActionRuntime runtime, WebContext context, String propertyName) {
+        if (context.getVariableNames().contains(propertyName)) {
+            throwThymeleafFormPropertyConflictingWithRegisteredDataException(runtime, context, propertyName);
         }
     }
 
-    protected void throwThymeleafFormPropertyConflictingWithRegisteredDataException(ActionRuntime runtime,
-            VariablesMap<String, Object> variableMap, String conflictedName) {
+    protected void throwThymeleafFormPropertyConflictingWithRegisteredDataException(ActionRuntime runtime, WebContext context,
+            String conflictedName) {
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Conflicting between form property and registered data.");
         br.addItem("Advice");
@@ -318,7 +314,9 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
         br.addItem("Action");
         br.addElement(runtime);
         br.addItem("Variable Map");
-        br.addElement(variableMap);
+        for (String variableName : context.getVariableNames()) {
+            br.addElement(variableName + " = " + context.getVariable(variableName));
+        }
         br.addItem("Conflicting Name");
         br.addElement(conflictedName);
         final String msg = br.buildExceptionMessage();

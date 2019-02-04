@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package org.lastaflute.thymeleaf.processor.expression;
+package org.lastaflute.thymeleaf.expression;
 
 import java.util.List;
 import java.util.Locale;
@@ -28,8 +28,9 @@ import org.lastaflute.core.direction.FwAssistantDirector;
 import org.lastaflute.core.util.ContainerUtil;
 import org.lastaflute.db.dbflute.classification.ListedClassificationProvider;
 import org.lastaflute.db.dbflute.exception.ProvidedClassificationNotFoundException;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.context.IProcessingContext;
+import org.thymeleaf.context.IExpressionContext;
+import org.thymeleaf.context.WebEngineContext;
+import org.thymeleaf.engine.TemplateData;
 import org.thymeleaf.exceptions.TemplateProcessingException;
 
 /**
@@ -50,7 +51,7 @@ import org.thymeleaf.exceptions.TemplateProcessingException;
  * @author schatten
  * @author jflute
  */
-public class ClassificationExpressionProcessor {
+public class ClassificationExpressionObject {
 
     // ===================================================================================
     //                                                                          Definition
@@ -60,13 +61,13 @@ public class ClassificationExpressionProcessor {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    private final IProcessingContext processingContext;
+    private final IExpressionContext context;
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ClassificationExpressionProcessor(IProcessingContext processingContext) {
-        this.processingContext = processingContext;
+    public ClassificationExpressionObject(IExpressionContext context) {
+        this.context = context;
     }
 
     // ===================================================================================
@@ -150,23 +151,22 @@ public class ClassificationExpressionProcessor {
         }
     }
 
-    // should be by-code, and may be unneeded by native property in form
-    ///**
-    // * Get classification alias.
-    // * @param classificationName The name of classification. (NotNull)
-    // * @param elementName The name of classification element. (NotNull)
-    // * @return classification alias (NotNull: if not found, throws exception)
-    // */
-    //public String alias(String classificationName, String elementName) {
-    //    assertArgumentNotNull("classificationName", classificationName);
-    //    assertArgumentNotNull("elementName", elementName);
-    //    final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
-    //        return "alias('" + classificationName + "', '" + elementName + "')";
-    //    });
-    //    final Classification cls = meta.nameOf(elementName);
-    //    assertClassificationByNameExists(classificationName, elementName, cls);
-    //    return findClassificationAlias(cls);
-    //}
+    /**
+     * Get classification alias.
+     * @param classificationName The name of classification. (NotNull)
+     * @param elementName The name of classification element. (NotNull)
+     * @return classification alias (NotNull: if not found, throws exception)
+     */
+    public String alias(String classificationName, String elementName) {
+        assertArgumentNotNull("classificationName", classificationName);
+        assertArgumentNotNull("elementName", elementName);
+        final ClassificationMeta meta = findClassificationMeta((String) classificationName, () -> {
+            return "alias('" + classificationName + "', '" + elementName + "')";
+        });
+        final Classification cls = meta.nameOf(elementName);
+        assertClassificationByNameExists(classificationName, elementName, cls);
+        return findClassificationAlias(cls);
+    }
 
     // -----------------------------------------------------
     //                                                code()
@@ -229,21 +229,20 @@ public class ClassificationExpressionProcessor {
     }
 
     // ===================================================================================
-    //                                                                            Accessor
-    //                                                                            ========
-    protected IProcessingContext getProcessingContext() {
-        return processingContext;
+    //                                                                  Thymeleaf Resource
+    //                                                                  ==================
+    protected Locale getUserLocale() { // not null
+        return context.getLocale(); // from web context (synchronized with requestManager's user locale)
     }
 
-    protected Locale getUserLocale() {
-        // #hope locale from request manager, how to set? by jflute (2017/03/19)
-        final IProcessingContext context = getProcessingContext(); // null check just in case?
-        return context != null ? context.getContext().getLocale() : Locale.getDefault();
-    }
-
-    protected String getRequestTemplatePath() {
-        final IProcessingContext context = getProcessingContext();
-        return context instanceof Arguments ? ((Arguments) context).getTemplateName() : null;
+    protected String getRequestTemplatePath() { // null allowed (basically not null, just in case)
+        if (context instanceof WebEngineContext) { // basically true
+            final TemplateData templateData = ((WebEngineContext) context).getTemplateData();
+            if (templateData != null) { // basically true
+                return templateData.getTemplate(); // not null (by JavaDoc)
+            }
+        }
+        return null;
     }
 
     // ===================================================================================
@@ -291,9 +290,10 @@ public class ClassificationExpressionProcessor {
         throw new TemplateProcessingException(msg, cause);
     }
 
-    // ===================================================================================
-    //                                                                           Component
-    //                                                                           =========
+    //
+    //// ===================================================================================
+    ////                                                                           Component
+    ////                                                                           =========
     protected FwAssistantDirector getAssistantDirector() {
         return getComponent(FwAssistantDirector.class);
     }
@@ -302,9 +302,9 @@ public class ClassificationExpressionProcessor {
         return ContainerUtil.getComponent(type);
     }
 
-    // ===================================================================================
-    //                                                                       Assert Helper
-    //                                                                       =============
+    //// ===================================================================================
+    ////                                                                       Assert Helper
+    ////                                                                       =============
     protected void assertCanBeClassification(Object cls) {
         if (!(cls instanceof Classification)) {
             throwNonClassificationObjectSpecifiedException(cls);
