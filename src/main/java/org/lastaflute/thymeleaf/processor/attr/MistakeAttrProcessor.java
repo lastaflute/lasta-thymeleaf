@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,38 +15,35 @@
  */
 package org.lastaflute.thymeleaf.processor.attr;
 
-import java.util.Map;
-
 import org.dbflute.helper.message.ExceptionMessageBuilder;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.templatemode.TemplateMode;
 
 /**
  * @author jflute
  */
-public class MistakeAttrProcessor extends AbstractAttributeModifierAttrProcessor {
-
-    protected final String name;
+public class MistakeAttrProcessor extends AbstractAttributeTagProcessor {
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public MistakeAttrProcessor(String name) {
-        super(name);
-        this.name = name;
+    public MistakeAttrProcessor(String dialectPrefix, String attrName) {
+        super(TemplateMode.HTML, dialectPrefix, /*elementName*/null //
+                , /*prefixElementName*/false, attrName, /*prefixAttributeName*/false //
+                , /*precedence*/1, true);
     }
 
     // ===================================================================================
-    //                                                                          Implements
-    //                                                                          ==========
+    //                                                                             Process
+    //                                                                             =======
     @Override
-    public int getPrecedence() {
-        return 1;
-    }
-
-    @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
+            IElementTagStructureHandler structureHandler) {
+        final String name = attributeName.getAttributeName();
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Mistaking prefix for the Lasta Thymeleaf name.");
         br.addItem("Advice");
@@ -56,26 +53,8 @@ public class MistakeAttrProcessor extends AbstractAttributeModifierAttrProcessor
         br.addElement("  (o):");
         br.addElement("    la:" + name + "=\"...\" // Good");
         br.addItem("Your Attribute");
-        br.addElement(attributeName + "=\"" + element.getAttributeValue(attributeName) + "\"");
+        br.addElement(attributeName + "=\"" + tag.getAttributeValue(attributeName) + "\"");
         final String msg = br.buildExceptionMessage();
         throw new IllegalStateException(msg);
-    }
-
-    // ===================================================================================
-    //                                                                     Option Override
-    //                                                                     ===============
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
-
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return true;
     }
 }

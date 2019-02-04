@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package org.lastaflute.thymeleaf.customizer;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
-
-import org.thymeleaf.context.IProcessingContext;
+import java.util.Set;
 
 /**
  * @author jflute
@@ -30,31 +30,31 @@ public class ThymeleafAdditionalExpressionResource {
     // ===================================================================================
     //                                                                           Attribute
     //                                                                           =========
-    protected final IProcessingContext processingContext;
-    protected final Map<String, Object> processorMap = new LinkedHashMap<String, Object>();
-
-    // ===================================================================================
-    //                                                                         Constructor
-    //                                                                         ===========
-    public ThymeleafAdditionalExpressionResource(IProcessingContext processingContext) {
-        this.processingContext = processingContext;
-    }
+    protected final Map<String, Object> expressionObjectMap = new LinkedHashMap<String, Object>();
+    protected final Set<String> cacheableExpressionObjectNames = new LinkedHashSet<String>();
 
     // ===================================================================================
     //                                                                            Register
     //                                                                            ========
-    public void registerProcessor(String key, Object processor) {
-        processorMap.put(key, processor);
+    public void registerExpressionObject(String key, Object expressionObject) {
+        expressionObjectMap.put(key, expressionObject);
+    }
+
+    public void registerExpressionObject(String key, Object expressionObject, boolean cacheable) {
+        expressionObjectMap.put(key, expressionObject);
+        if (cacheable) {
+            cacheableExpressionObjectNames.add(key);
+        }
     }
 
     // ===================================================================================
     //                                                                            Accessor
     //                                                                            ========
-    public IProcessingContext getProcessingContext() {
-        return processingContext;
+    public Map<String, Object> getExpressionObjectMap() {
+        return Collections.unmodifiableMap(expressionObjectMap);
     }
 
-    public Map<String, Object> getProcessorMap() {
-        return Collections.unmodifiableMap(processorMap);
+    public Set<String> getCacheableExpressionObjectNames() {
+        return Collections.unmodifiableSet(cacheableExpressionObjectNames);
     }
 }

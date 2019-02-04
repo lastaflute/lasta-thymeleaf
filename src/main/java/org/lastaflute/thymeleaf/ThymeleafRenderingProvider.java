@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,23 @@
  */
 package org.lastaflute.thymeleaf;
 
+import java.util.function.Consumer;
+
 import org.lastaflute.thymeleaf.customizer.ThymeleafAdditionalExpressionSetupper;
-import org.lastaflute.thymeleaf.processor.LastaThymeleafDialect;
-import org.lastaflute.thymeleaf.processor.LastaThymeleafMistakeDialect;
+import org.lastaflute.thymeleaf.dialect.LastaThymeleafDialect;
+import org.lastaflute.thymeleaf.dialect.LastaThymeleafMistakeDialect;
+import org.lastaflute.thymeleaf.message.resolver.ManagedMessageResolver;
 import org.lastaflute.web.response.HtmlResponse;
 import org.lastaflute.web.ruts.NextJourney;
 import org.lastaflute.web.ruts.process.ActionRuntime;
 import org.lastaflute.web.ruts.renderer.HtmlRenderer;
 import org.lastaflute.web.ruts.renderer.HtmlRenderingProvider;
 import org.lastaflute.web.util.LaServletContextUtil;
-import org.thymeleaf.Configuration;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
+import org.thymeleaf.standard.StandardDialect;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
-import org.thymeleaf.templateresolver.TemplateResolver;
 
 /**
  * Thymeleaf rendering provider of Lastaflute.
@@ -48,6 +51,8 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     //                                                                           =========
     protected boolean development;
     protected ThymeleafAdditionalExpressionSetupper additionalExpressionSetupper; // null allowed
+    protected Consumer<StandardDialect> standardDialectSetupper; // null allowed
+
     private TemplateEngine cachedTemplateEngine;
 
     // ===================================================================================
@@ -63,6 +68,14 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
             throw new IllegalArgumentException("The argument 'additionalExpressionSetupper' should not be null.");
         }
         this.additionalExpressionSetupper = additionalExpressionSetupper;
+        return this;
+    }
+
+    public ThymeleafRenderingProvider customizeStandardDialect(Consumer<StandardDialect> standardDialectSetupper) {
+        if (standardDialectSetupper == null) {
+            throw new IllegalArgumentException("The argument 'standardDialectSetupper' should not be null.");
+        }
+        this.standardDialectSetupper = standardDialectSetupper;
         return this;
     }
 
@@ -124,12 +137,30 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         engine.addMessageResolver(createLastaThymeleafMessageResolver());
         engine.addDialect(createLastaThymeleafDialect(engine));
         engine.addDialect(createLastaThymeleafMistakeDialect(engine));
+        setupStandardDialectIfNeeds(engine);
     }
+
+    protected void setupStandardDialectIfNeeds(TemplateEngine engine) {
+        if (standardDialectSetupper != null) {
+            final StandardDialect standardDialect = findStandardDialect(engine);
+            standardDialectSetupper.accept(standardDialect);
+        }
+    }
+
+    protected StandardDialect findStandardDialect(TemplateEngine engine) {
+        return (StandardDialect) engine.getDialects().stream().filter(di -> {
+            return di instanceof StandardDialect;
+        }).findFirst().get(); // always present
+    }
+
+    // #history jflute Lasta Thymeleaf uses embedded JSON serializer as default (2019/01/18)
+    // application can set your own JavaScriptSerializer via StandardDialect
+    // and JsonManager is not always matched with thymeleaf JSON handling
 
     // -----------------------------------------------------
     //                                     Template Resolver
     //                                     -----------------
-    protected TemplateResolver createTemplateResolver() {
+    protected ITemplateResolver createTemplateResolver() {
         final ServletContextTemplateResolver resolver = newServletContextTemplateResolver();
         resolver.setPrefix(getHtmlViewPrefix());
         resolver.setTemplateMode(getTemplateMode());
@@ -139,7 +170,7 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     }
 
     protected ServletContextTemplateResolver newServletContextTemplateResolver() {
-        return new ServletContextTemplateResolver();
+        return new ServletContextTemplateResolver(LaServletContextUtil.getServletContext());
     }
 
     protected String getHtmlViewPrefix() {
@@ -167,35 +198,35 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         return resolver;
     }
 
-    protected LastaThymeleafMessageResolver createLastaThymeleafMessageResolver() {
-        final LastaThymeleafMessageResolver resolver = newLastaThymeleafMessageResolver();
+    protected ManagedMessageResolver createLastaThymeleafMessageResolver() {
+        final ManagedMessageResolver resolver = newLastaThymeleafMessageResolver();
         resolver.setOrder(10);
         return resolver;
     }
 
-    protected LastaThymeleafMessageResolver newLastaThymeleafMessageResolver() {
-        return new LastaThymeleafMessageResolver();
+    protected ManagedMessageResolver newLastaThymeleafMessageResolver() {
+        return new ManagedMessageResolver();
     }
 
     // -----------------------------------------------------
     //                                          Main Dialect
     //                                          ------------
     protected LastaThymeleafDialect createLastaThymeleafDialect(TemplateEngine engine) {
-        final LastaThymeleafDialect dialect = newLastaThymeleafDialect(engine.getConfiguration());
+        final LastaThymeleafDialect dialect = newLastaThymeleafDialect();
         if (additionalExpressionSetupper != null) {
             dialect.additionalExpression(additionalExpressionSetupper);
         }
         return dialect;
     }
 
-    protected LastaThymeleafDialect newLastaThymeleafDialect(Configuration configuration) {
-        return new LastaThymeleafDialect(configuration);
+    protected LastaThymeleafDialect newLastaThymeleafDialect() {
+        return new LastaThymeleafDialect();
     }
 
     // -----------------------------------------------------
     //                                       Mistake Dialect
     //                                       ---------------
     protected LastaThymeleafMistakeDialect createLastaThymeleafMistakeDialect(TemplateEngine engine) {
-        return new LastaThymeleafMistakeDialect(engine.getConfiguration());
+        return new LastaThymeleafMistakeDialect();
     }
 }

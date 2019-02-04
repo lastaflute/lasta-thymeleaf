@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2017 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,78 +15,82 @@
  */
 package org.lastaflute.thymeleaf.processor.attr;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.dbflute.util.Srl;
-import org.thymeleaf.Arguments;
-import org.thymeleaf.Configuration;
-import org.thymeleaf.dom.Element;
-import org.thymeleaf.processor.attr.AbstractAttributeModifierAttrProcessor;
-import org.thymeleaf.standard.expression.IStandardExpression;
-import org.thymeleaf.standard.expression.IStandardExpressionParser;
-import org.thymeleaf.standard.expression.StandardExpressions;
+import org.lastaflute.thymeleaf.processor.attr.option.ExpressionAttributeTagInitOption;
+import org.thymeleaf.context.ITemplateContext;
+import org.thymeleaf.engine.AttributeName;
+import org.thymeleaf.model.IProcessableElementTag;
+import org.thymeleaf.processor.element.IElementTagStructureHandler;
+import org.thymeleaf.standard.processor.AbstractStandardExpressionAttributeTagProcessor;
+import org.thymeleaf.templatemode.TemplateMode;
 
 /**
- * Token Attribute Processor.
+ * Errors Attribute Processor.
  * <pre>
  * Usage:
- *   &lt;span class="errors" <b>la:errors="sea"</b>/&gt;
+ *   &lt;span <b>la:errors="sea"</b>/&gt;
  *
  * The result of processing this example will be as expected.
  *   &lt;span class="errors"&gt;<b>is required</b>&lt;/span&gt;
  * </pre>
  * @author jflute
+ * @author p1us2er0
  */
-public class ErrorsAttrProcessor extends AbstractAttributeModifierAttrProcessor {
+public class ErrorsAttrProcessor extends AbstractStandardExpressionAttributeTagProcessor {
 
     // ===================================================================================
     //                                                                          Definition
     //                                                                          ==========
-    public static final String ATTRIBUTE_NAME = "errors";
-    public static final String DEFAULT_STYLE = "errors";
+    // -----------------------------------------------------
+    //                                     Constructor Value
+    //                                     -----------------
+    public static final String ATTR_NAME = "errors"; // e.g. la:errors="sea"
+    public static final int PRECEDENCE = 950;
+    public static final boolean REMOVE_ATTRIBUTE = true;
+
+    // -----------------------------------------------------
+    //                                      Changeable Value
+    //                                      ----------------
+    public static final String DEFAULT_STYLE = "errors"; // e.g. class="errors"
 
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
-    public ErrorsAttrProcessor() {
-        super(ATTRIBUTE_NAME);
+    public ErrorsAttrProcessor(String dialectPrefix, ExpressionAttributeTagInitOption option) {
+        super(TemplateMode.HTML, dialectPrefix, ATTR_NAME, PRECEDENCE, REMOVE_ATTRIBUTE, option.isRestrictedExpressionExecution());
     }
 
     // ===================================================================================
     //                                                                          Implements
     //                                                                          ==========
     @Override
-    public int getPrecedence() {
-        return 950;
-    }
-
-    @Override
-    protected Map<String, String> getModifiedAttributeValues(Arguments arguments, Element element, String attributeName) {
-        final String specifiedValue = extractSpecifiedValue(arguments, element, attributeName);
-        final Map<String, String> values = new HashMap<String, String>();
-        values.put("class", prepareOverridingStyle(element));
+    protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
+            Object expressionResult, IElementTagStructureHandler structureHandler) {
+        // _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+        // <span la:errors="sea"/>
+        //  ||
+        //  vv
+        // <span class="errors" th:each="er : ${errors.part('sea')}" th:text="is required"/>
+        //  ||
+        //  vv
+        // <span class="errors">is required</span>
+        // <span class="errors">is funny</span>
+        // ...
+        // _/_/_/_/_/_/_/_/_/_/
+        final String specifiedValue = expressionResult.toString();
+        structureHandler.setAttribute("class", prepareOverridingStyle(tag));
         final String eachValue;
         if ("all".equalsIgnoreCase(specifiedValue)) {
             eachValue = "er : ${errors.all}";
         } else {
             eachValue = "er : ${errors.part('" + specifiedValue + "')}";
         }
-        values.put("th:each", eachValue);
-        values.put("th:text", "${er.message}");
-        return values;
+        structureHandler.setAttribute("th:each", eachValue);
+        structureHandler.setAttribute("th:text", "${er.message}");
     }
 
-    protected String extractSpecifiedValue(Arguments arguments, Element element, String attributeName) {
-        final Configuration configuration = arguments.getConfiguration();
-        final String attributeValue = element.getAttributeValue(attributeName);
-        final IStandardExpressionParser parser = StandardExpressions.getExpressionParser(configuration);
-        final IStandardExpression expression = parser.parseExpression(configuration, arguments, attributeValue);
-        return expression.execute(configuration, arguments).toString();
-    }
-
-    protected String prepareOverridingStyle(Element element) {
-        final String classAttr = element.getAttributeValueFromNormalizedName("class");
+    protected String prepareOverridingStyle(IProcessableElementTag tag) {
+        final String classAttr = tag.getAttributeValue("class");
         final String embeddedStyle = getErrorsEmbeddedStyle();
         final String overridingStyle;
         if (classAttr != null && !classAttr.isEmpty()) {
@@ -105,21 +109,20 @@ public class ErrorsAttrProcessor extends AbstractAttributeModifierAttrProcessor 
         return DEFAULT_STYLE;
     }
 
+    // these are for Thymeleaf2, comment out as reference for migration
     // ===================================================================================
     //                                                                     Option Override
     //                                                                     ===============
-    @Override
-    protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return ModificationType.SUBSTITUTION;
-    }
+    // done, cannot select it in this super class, default is SUBSTITUTION... by jflute (2018/04/11)
+    // but la:errors may not be related to modification type so out of migration target
+    //@Override
+    //protected ModificationType getModificationType(Arguments arguments, Element element, String attributeName, String newAttributeName) {
+    //    return ModificationType.SUBSTITUTION;
+    //}
 
-    @Override
-    protected boolean removeAttributeIfEmpty(Arguments arguments, Element element, String attributeName, String newAttributeName) {
-        return true;
-    }
-
-    @Override
-    protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
-        return true;
-    }
+    // what is recompute? however this tag works well so no care for now by jflute
+    //@Override
+    //protected boolean recomputeProcessorsAfterExecution(Arguments arguments, Element element, String attributeName) {
+    //    return true;
+    //}
 }
