@@ -31,10 +31,12 @@ public class MistakeAttrProcessor extends AbstractAttributeTagProcessor {
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
+    // prefixAttributeName should be true or wrong check e.g. <meta property="sea">
+    // while, removeAttribute=true is not needed...?
     public MistakeAttrProcessor(String dialectPrefix, String attrName) {
         super(TemplateMode.HTML, dialectPrefix, /*elementName*/null //
-                , /*prefixElementName*/false, attrName, /*prefixAttributeName*/false //
-                , /*precedence*/1, true);
+                , /*prefixElementName*/false, attrName, /*prefixAttributeName*/true //
+                , /*precedence*/1, /*removeAttribute*/true);
     }
 
     // ===================================================================================
@@ -52,7 +54,11 @@ public class MistakeAttrProcessor extends AbstractAttributeTagProcessor {
         br.addElement("    th:" + name + "=\"...\" // *Bad");
         br.addElement("  (o):");
         br.addElement("    la:" + name + "=\"...\" // Good");
-        br.addItem("Your Attribute");
+        br.addItem("Template File");
+        br.addElement(tag.getTemplateName());
+        br.addItem("Tag Name");
+        br.addElement(tag.getElementDefinition());
+        br.addItem("Attribute on Tag");
         br.addElement(attributeName + "=\"" + tag.getAttributeValue(attributeName) + "\"");
         final String msg = br.buildExceptionMessage();
         throw new IllegalStateException(msg);
