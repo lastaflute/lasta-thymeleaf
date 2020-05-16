@@ -32,13 +32,13 @@ import org.thymeleaf.util.StringUtils;
  * Usage:
  *   &lt;select <b>la:property="status"</b>&gt;
  *     &lt;option&gt;&lt;/option&gt;
- *     &lt;option <b>la:optionCls="'MemberStatus'"</b>&gt;&lt;/option&gt;
+ *     &lt;option <b>la:optionCls="MemberStatus"</b>&gt;&lt;/option&gt;
  *   &lt;/select&gt;
  *
  * This means is :
  *   &lt;select name="status"&gt;
  *     &lt;option&gt;&lt;/option&gt;
- *     &lt;option <b>th:each="cdef : ${#cls.listAll('MemberStatus')}" th:value="${#cls.code(cdef)}" th:text="${#cls.alias(status)}"</b> th:selected="${cdef} == ${status}"&gt;&lt;/option&gt;
+ *     &lt;option <b>th:each="cdef : ${#cls.listAll('MemberStatus')}" th:value="${cdef.code()}" th:text="${cdef.alias()}"</b> th:selected="${cdef} == ${status}"&gt;&lt;/option&gt;
  *   &lt;/select&gt;
  *
  * The result of processing this example will be as expected.
@@ -47,20 +47,6 @@ import org.thymeleaf.util.StringUtils;
  *     &lt;option selected="selected" value="FML"&gt;Formalized&lt;/option&gt;
  *     &lt;option value="WDL"&gt;Withdrawal&lt;/option&gt;
  *     &lt;option value="PRV"&gt;Provisional&lt;/option&gt;
- *   &lt;/select&gt;
- *
- * 2.If Custom text use.("prod" is iteration variable)
- *   &lt;select la:proparty="status"&gt;
- *     &lt;option&gt;&lt;/option&gt;
- *     &lt;option <b>la:optionCls="prod : 'MemberStatus'"</b> th:text="${#cls.code(prod)} + ' : ' + ${#cls.alias(prod)}"&gt;&lt;/option&gt;
- *   &lt;/select&gt;
- *
- * The result of processing this example will be as expected.
- *   &lt;select name="status"&gt;
- *     &lt;option&gt;&lt;/option&gt;
- *     &lt;option selected="selected" value="FML"&gt;FML : Formalized&lt;/option&gt;
- *     &lt;option value="WDL"&gt;WDL : Withdrawal&lt;/option&gt;
- *     &lt;option value="PRV"&gt;PRV : Provisional&lt;/option&gt;
  *   &lt;/select&gt;
  * </pre>
  * @author schatten
@@ -89,18 +75,28 @@ public class OptionClsAttrProcessor extends AbstractStandardExpressionAttributeT
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
             Object expressionResult, IElementTagStructureHandler structureHandler) {
-        final String optionClsName = expressionResult.toString();
+        final String optionClsName = extractOptionClsName(expressionResult);
         structureHandler.setAttribute("th:each", String.format("cdef : ${#cls.listAll('%s')}", optionClsName));
         structureHandler.setAttribute("th:value", "${cdef.code()}");
         structureHandler.setAttribute("th:text", "${cdef.alias()}");
 
-        List<IProcessableElementTag> elementStack = context.getElementStack();
+        final List<IProcessableElementTag> elementStack = context.getElementStack();
         if (elementStack.size() >= 2) {
-            IProcessableElementTag parentTag = elementStack.get(elementStack.size() - 2);
-            String propertyName = parentTag.getAttributeValue(getDialectPrefix(), "property");
+            final IProcessableElementTag parentTag = elementStack.get(elementStack.size() - 2);
+            final String propertyName = parentTag.getAttributeValue(getDialectPrefix(), "property");
             if (!StringUtils.isEmpty(propertyName)) {
-                structureHandler.setAttribute("th:selected", String.format("${cdef} == ${%s}", propertyName));
+                final String selected = isMultipleSelect(parentTag) ? "${%s != null && %s.contains(cdef)}" : "${cdef} == ${%s}";
+                structureHandler.setAttribute("th:selected", String.format(selected, propertyName, propertyName));
             }
         }
+    }
+
+    protected String extractOptionClsName(Object expressionResult) {
+        return expressionResult.toString();
+    }
+
+    protected boolean isMultipleSelect(IProcessableElementTag parentTag) {
+        final String multiple = parentTag.getAttributeValue("multiple"); // null allowed (when not found)
+        return "multiple".equals(multiple); // multiple="multiple"
     }
 }
