@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.lastaflute.thymeleaf.processor.attr;
 import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.thymeleaf.context.ITemplateContext;
 import org.thymeleaf.engine.AttributeName;
-import org.thymeleaf.model.IAttribute;
 import org.thymeleaf.model.IProcessableElementTag;
 import org.thymeleaf.processor.element.AbstractAttributeTagProcessor;
 import org.thymeleaf.processor.element.IElementTagStructureHandler;
@@ -32,10 +31,12 @@ public class MistakeAttrProcessor extends AbstractAttributeTagProcessor {
     // ===================================================================================
     //                                                                         Constructor
     //                                                                         ===========
+    // prefixAttributeName should be true or wrong check e.g. <meta property="sea">
+    // while, removeAttribute=true is not needed...?
     public MistakeAttrProcessor(String dialectPrefix, String attrName) {
         super(TemplateMode.HTML, dialectPrefix, /*elementName*/null //
-                , /*prefixElementName*/false, attrName, /*prefixAttributeName*/false //
-                , /*precedence*/1, true);
+                , /*prefixElementName*/false, attrName, /*prefixAttributeName*/true //
+                , /*precedence*/1, /*removeAttribute*/true);
     }
 
     // ===================================================================================
@@ -44,9 +45,6 @@ public class MistakeAttrProcessor extends AbstractAttributeTagProcessor {
     @Override
     protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, String attributeValue,
             IElementTagStructureHandler structureHandler) {
-        if (isOutOfTarget(tag, attributeName, attributeValue)) { // e.g. <meta property="sea">
-            return;
-        }
         final String name = attributeName.getAttributeName();
         final ExceptionMessageBuilder br = new ExceptionMessageBuilder();
         br.addNotice("Mistaking prefix for the Lasta Thymeleaf name.");
@@ -64,25 +62,5 @@ public class MistakeAttrProcessor extends AbstractAttributeTagProcessor {
         br.addElement(attributeName + "=\"" + tag.getAttributeValue(attributeName) + "\"");
         final String msg = br.buildExceptionMessage();
         throw new IllegalStateException(msg);
-    }
-
-    protected boolean isOutOfTarget(IProcessableElementTag tag, AttributeName attributeName, String attributeValue) {
-        final String tagPlainName = tag.getElementCompleteName();
-        final IAttribute attribute = tag.getAttribute(attributeName);
-        if (attribute == null) { // no way, just in case (because of additional process here)
-            return false;
-        }
-        final String attrPlainName = attribute.getAttributeCompleteName();
-        if (isMetaTagPropertyAttr(tagPlainName, attrPlainName)) { // e.g. <meta property="sea"> 
-            // "property=..." is also coming here since thymeleaf3
-            // but cannot determine "th:property=..." and just "property=..."
-            // so ignore check at the case
-            return true;
-        }
-        return false;
-    }
-
-    protected boolean isMetaTagPropertyAttr(String tagPlainName, String attrPlainName) {
-        return "meta".equalsIgnoreCase(tagPlainName) && "property".equalsIgnoreCase(attrPlainName);
     }
 }
