@@ -22,11 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.dbflute.helper.message.ExceptionMessageBuilder;
 import org.dbflute.util.Srl;
 import org.lastaflute.core.message.UserMessages;
@@ -48,6 +43,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.WebContext;
+import org.thymeleaf.web.servlet.IServletWebExchange;
+import org.thymeleaf.web.servlet.JakartaServletWebApplication;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * @author jflute
@@ -121,12 +123,22 @@ public class ThymeleafHtmlRenderer implements HtmlRenderer {
     // -----------------------------------------------------
     //                                      Template Context
     //                                      ----------------
+    // #jakarta the way to create web context has been changed by jflute (2024/07/25)
     protected WebContext createTemplateContext(RequestManager requestManager) {
+        final IServletWebExchange exchange = createWebExchange(requestManager);
+        return newWebContext(exchange, requestManager.getUserLocale());
+    }
+
+    protected IServletWebExchange createWebExchange(RequestManager requestManager) {
+        final ServletContext servletContext = requestManager.getServletContext();
         final HttpServletRequest request = requestManager.getRequest();
         final HttpServletResponse response = requestManager.getResponseManager().getResponse();
-        final ServletContext servletContext = request.getServletContext();
-        final Locale locale = requestManager.getUserLocale();
-        return new WebContext(request, response, servletContext, locale);
+        final JakartaServletWebApplication application = JakartaServletWebApplication.buildApplication(servletContext);
+        return application.buildExchange(request, response);
+    }
+
+    protected WebContext newWebContext(IServletWebExchange exchange, Locale locale) {
+        return new WebContext(exchange, locale);
     }
 
     // -----------------------------------------------------

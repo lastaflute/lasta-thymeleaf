@@ -31,7 +31,11 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
 import org.thymeleaf.standard.StandardDialect;
 import org.thymeleaf.templateresolver.ITemplateResolver;
-import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
+import org.thymeleaf.templateresolver.WebApplicationTemplateResolver;
+import org.thymeleaf.web.IWebApplication;
+import org.thymeleaf.web.servlet.JakartaServletWebApplication;
+
+import jakarta.servlet.ServletContext;
 
 /**
  * Thymeleaf rendering provider of Lastaflute.
@@ -160,8 +164,9 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
     // -----------------------------------------------------
     //                                     Template Resolver
     //                                     -----------------
+    // #jakarta the way to create template resolver has been changed by jflute (2024/07/25)
     protected ITemplateResolver createTemplateResolver() {
-        final ServletContextTemplateResolver resolver = newServletContextTemplateResolver();
+        final WebApplicationTemplateResolver resolver = createWebApplicationTemplateResolver();
         resolver.setPrefix(getHtmlViewPrefix());
         resolver.setTemplateMode(getTemplateMode());
         resolver.setCharacterEncoding(getEncoding());
@@ -169,8 +174,14 @@ public class ThymeleafRenderingProvider implements HtmlRenderingProvider {
         return resolver;
     }
 
-    protected ServletContextTemplateResolver newServletContextTemplateResolver() {
-        return new ServletContextTemplateResolver(LaServletContextUtil.getServletContext());
+    protected WebApplicationTemplateResolver createWebApplicationTemplateResolver() {
+        final ServletContext servletContext = LaServletContextUtil.getServletContext();
+        final JakartaServletWebApplication webApplication = JakartaServletWebApplication.buildApplication(servletContext);
+        return newWebApplicationTemplateResolver(webApplication);
+    }
+
+    protected WebApplicationTemplateResolver newWebApplicationTemplateResolver(IWebApplication webApplication) {
+        return new WebApplicationTemplateResolver(webApplication);
     }
 
     protected String getHtmlViewPrefix() {
